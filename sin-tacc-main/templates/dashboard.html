@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+    {% extends 'base_admin.html' %}
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Admin</title>
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+    
+</head>
+<body>
+
+    <header class="admin-navbar">
+        <nav>
+          <a href="{{ url_for('ver_mapa') }}">🏠 Mapa</a>
+          <a href="{{ url_for('dashboard') }}">📊 Dashboard</a>
+          <a href="{{ url_for('revisar_lugares') }}">🔍 Revisar</a>
+          <a href="{{ url_for('admin_usuarios') }}" class="btn btn-primary">Gestionar Usuarios</a>
+          <a href="{{ url_for('admin_logs') }}">🕵️‍♂️ Historial</a>
+          <a href="{{ url_for('logout') }}">🚪 Cerrar sesión</a>
+          <button id="btn-modo-oscuro" class="modo-toggle">🌙 Modo oscuro</button>
+        </nav>
+      </header>
+      
+    
+<main class="contenedor-dashboard">
+    {% block content %}
+    <h1>📊 Dashboard de Administración</h1>
+
+    <div class="estadisticas">
+        <div class="card total">📋 Total: {{ total }}</div>
+        <div class="card aprobado">✅ Aprobados: {{ aprobados }}</div>
+        <div class="card pendiente">🕓 Pendientes: {{ pendientes }}</div>
+        <div class="card rechazado">❌ Rechazados: {{ rechazados }}</div>
+    </div>
+
+    <h2>📍 Lista de Lugares</h2>
+
+    <div class="lista-lugares">
+        {% for lugar in lugares %}
+        <div class="tarjeta-lugar">
+            <h3>{{ lugar.nombre }}</h3>
+            <p><strong>Tipo:</strong> {{ lugar.tipo }}</p>
+            <p><strong>Fecha de envío:</strong> {{ lugar.fecha_envio.strftime('%d/%m/%Y') }}</p>
+            <p><strong>Dirección:</strong> {{ lugar.direccion }}, {{ lugar.ciudad }}, {{ lugar.provincia }}</p>
+
+        
+            {% if lugar.lat == 'NULL' or lugar.lng == 'NULL' %}
+                <p class="sin-ubicacion">❓ Sin ubicación definida</p>
+                <a href="{{ url_for('editar_ubicacion', lugar_id=lugar.id) }}" class="btn-volver">🗺️ Corregir ubicación</a>
+            {% endif %}
+
+
+        
+            <form method="POST" action="{{ url_for('eliminar_lugar', lugar_id=lugar.id) }}">
+                <button type="submit" class="btn-eliminar">🗑️ Eliminar</button>
+            </form>
+        </div>
+        
+        {% endfor %}
+    </div>
+
+
+    <a href="{{ url_for('exportar_csv') }}" class="btn-exportar" target="_blank">📥 Exportar informe completo ZIP</a>
+
+
+    <hr>
+    <h2>📈 Estadísticas Avanzadas</h2>
+
+    <!-- Usuarios -->
+    <h3>👥 Usuarios Registrados</h3>
+    <ul>
+      <li>Total: {{ total_usuarios }}</li>
+      <li>Administradores: {{ total_admins }}</li>
+      <li>Usuarios comunes: {{ total_usuarios - total_admins }}</li>
+    </ul>
+
+    <canvas id="graficoUsuarios" width="400" height="200"></canvas>
+
+    <!-- Provincias -->
+    <h3>🌍 Lugares por Provincia</h3>
+    <canvas id="graficoProvincias" width="600" height="300"></canvas>
+
+    <!-- Últimos cambios -->
+    <h3>🕵️ Últimos cambios de permisos</h3>
+
+    <form method="get" action="{{ url_for('dashboard') }}" class="form-filtros" style="margin-bottom: 1.5rem;">
+    <label for="accion">Acción:</label>
+    <select name="accion" id="accion">
+        <option value="">Todas</option>
+        <option value="Hacer admin" {% if accion_filtro == 'Hacer admin' %}selected{% endif %}>Hacer admin</option>
+        <option value="Quitar admin" {% if accion_filtro == 'Quitar admin' %}selected{% endif %}>Quitar admin</option>
+    </select>
+
+    <label for="desde">Desde:</label>
+    <input type="date" name="desde" value="{{ fecha_desde or '' }}">
+
+    <label for="hasta">Hasta:</label>
+    <input type="date" name="hasta" value="{{ fecha_hasta or '' }}">
+
+    <button type="submit">Filtrar</button>
+    {% if accion_filtro or fecha_desde or fecha_hasta %}
+        <a href="{{ url_for('dashboard') }}" class="btn-exportar" style="margin-left: 1rem;">Quitar filtros</a>
+    {% endif %}
+    </form>
+
+    <ul>
+    {% for log in ultimos_logs %}
+        <li>{{ log.fecha.strftime('%d/%m/%Y %H:%M') }} – {{ log.admin.email }} → {{ log.usuario_afectado.email }} ({{ log.accion }})</li>
+    {% else %}
+        <li><em>No hay resultados para los filtros seleccionados.</em></li>
+    {% endfor %}
+    </ul>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      const ctx1 = document.getElementById('graficoUsuarios').getContext('2d');
+      new Chart(ctx1, {
+        type: 'bar',
+        data: {
+          labels: ['Admins', 'Usuarios'],
+          datasets: [{
+            label: 'Cantidad',
+            data: [{{ total_admins }}, {{ total_usuarios - total_admins }}],
+            backgroundColor: ['#36a2eb', '#4bc0c0']
+          }]
+        }
+      });
+
+      const ctx2 = document.getElementById('graficoProvincias').getContext('2d');
+      new Chart(ctx2, {
+        type: 'bar',
+        data: {
+          labels: {{ provincias_labels|safe }},
+          datasets: [{
+            label: 'Lugares por provincia',
+            data: {{ provincias_data|safe }},
+            backgroundColor: '#ffcd56'
+          }]
+        }
+      });
+    </script>
+
+    {% endblock %}
+</main>
+
+<script src="/static/js/dashboard.js"></script>
+</body>
+</html>

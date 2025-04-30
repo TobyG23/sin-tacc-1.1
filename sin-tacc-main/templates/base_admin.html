@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Panel Admin{% endblock %}</title>
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+</head>
+<body class="{% block body_class %}dashboard{% endblock %}">
+
+
+<header class="admin-navbar">
+    <nav>
+        <a href="{{ url_for('ver_mapa') }}">🏠 Mapa</a>
+        <a href="{{ url_for('dashboard') }}">📊 Dashboard</a>
+        <a href="{{ url_for('revisar_lugares') }}">🔍 Revisar</a>
+        <a href="{{ url_for('admin_usuarios') }}">👥 Usuarios</a>
+        <a href="{{ url_for('logout') }}">🚪 Cerrar sesión</a>
+        <button id="btn-modo-oscuro" class="modo-toggle">🌙</button>
+    </nav>
+</header>
+
+<main class="contenedor-dashboard">
+    {% block content %}{% endblock %}
+</main>
+
+<script src="/static/js/dashboard.js"></script>
+</body>
+</html>

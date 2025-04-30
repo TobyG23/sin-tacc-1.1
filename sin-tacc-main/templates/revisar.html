@@ -1,0 +1,88 @@
+<link rel="stylesheet" href="/static/css/revisar.css">
+
+{% extends 'base_admin.html' %}
+
+{% block title %}Revisar Sugerencias{% endblock %}
+
+{% block body_class %}revisar{% endblock %}
+
+{% block content %}
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="flash-container">
+      {% for category, message in messages %}
+        <div class="flash-message {{ category }}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<div class="filtros-revisar">
+  <a href="/revisar?estado=pendiente" class="btn-filtro pendiente">🕓 Pendientes</a>
+  <a href="/revisar?estado=aprobado" class="btn-filtro aprobado">✅ Aprobados</a>
+  <a href="/revisar?estado=rechazado" class="btn-filtro rechazado">❌ Rechazados</a>
+</div>
+
+<main class="contenedor-revisar">
+  <h1>📋 Sugerencias para revisar</h1>
+  {% for lugar in lugares %}
+  <div class="tarjeta-lugar">
+    <h2>
+      {{ lugar.nombre }}
+      {% if lugar.aprobado %}
+        <span class="badge badge-aprobado">✅ Aprobado</span>
+      {% elif lugar.rechazado %}
+        <span class="badge badge-rechazado">❌ Rechazado</span>
+      {% else %}
+        <span class="badge badge-pendiente">🕓 Pendiente</span>
+      {% endif %}
+    </h2>
+
+    {% if lugar.lat and lugar.lng %}
+      <p><strong>País:</strong> {{ lugar.pais }}</p>
+      <p><strong>Latitud:</strong> {{ lugar.lat }}</p>
+      <p><strong>Longitud:</strong> {{ lugar.lng }}</p>
+      <p><strong>Fecha de envío:</strong> {{ lugar.fecha_envio.strftime('%d/%m/%Y') }}</p>
+    {% else %}
+      <p><strong>Fecha de envío:</strong> {{ lugar.fecha_envio.strftime('%d/%m/%Y') }}</p>
+      <p><strong>Dirección:</strong> {{ lugar.direccion }}
+      {% if lugar.ciudad %}, {{ lugar.ciudad }}{% endif %}
+      {% if lugar.provincia %}, {{ lugar.provincia }}{% endif %}
+      </p>
+    {% endif %}
+
+    <p><strong>Tipo:</strong> {{ lugar.tipo }}</p>
+    <p><strong>Comentarios:</strong> {{ lugar.comentarios or "Sin comentarios" }}</p>
+
+    {% if not lugar.aprobado and not lugar.rechazado %}
+    <div class="botones-acciones">
+      <form method="POST" action="/aprobar/{{ lugar.id }}">
+        <button type="submit" class="btn-aprobar">✔️ Aprobar</button>
+      </form>
+
+      <form method="POST" action="/rechazar/{{ lugar.id }}">
+        <button type="submit" class="btn-rechazar">❌ Rechazar</button>
+      </form>
+    </div>
+    {% endif %}
+  </div>
+  {% endfor %}
+</main>
+
+<div class="paginacion">
+  {% if lugares.has_prev %}
+    <a href="{{ url_for('revisar_lugares', estado=request.args.get('estado'), page=lugares.prev_num) }}">← Anterior</a>
+  {% endif %}
+
+  <span>Página {{ lugares.page }} de {{ lugares.pages }}</span>
+
+  {% if lugares.has_next %}
+    <a href="{{ url_for('revisar_lugares', estado=request.args.get('estado'), page=lugares.next_num) }}">Siguiente →</a>
+  {% endif %}
+</div>
+
+
+{% endblock %}

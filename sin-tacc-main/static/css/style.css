@@ -1,0 +1,188 @@
+:root {
+    /* Paleta clara */
+    --color-bg: #f8f9fa;
+    --color-text: #333;
+    --color-primary: #b32d00;
+    --color-header-text: white;
+    --color-footer-text: #666;
+
+    --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    font-family: var(--font-main);
+    background-color: var(--color-bg);
+    margin: 0;
+    padding: 0;
+    color: var(--color-text);
+    transition: background-color 0.3s, color 0.3s;
+}
+
+header {
+    background-color: var(--color-primary);
+    color: var(--color-header-text);
+    padding: 1rem 2rem;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+h1 {
+    margin: 0;
+    font-size: 1.8rem;
+}
+
+#map {
+    height: 90vh;
+    width: 100%;
+    margin: 0 auto;
+    z-index: 1;
+}
+
+.leaflet-popup-content {
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+.leaflet-popup-content strong {
+    color: var(--color-primary);
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+footer {
+    text-align: center;
+    padding: 10px;
+    font-size: 0.8rem;
+    color: var(--color-footer-text);
+}
+
+input:invalid,
+textarea:invalid {
+    border-color: #ff4d4d;
+}
+
+input:invalid:focus,
+textarea:invalid:focus {
+    border-color: #ff1a1a;
+}
+
+.form-container .error-message {
+    color: #ff1a1a;
+    font-size: 0.8rem;
+    margin-top: -10px;
+    margin-bottom: 10px;
+    display: none;
+}
+
+input:invalid + .error-message,
+textarea:invalid + .error-message {
+    display: block;
+}
+
+.error-message {
+    color: #d32f2f;
+    font-size: 0.85rem;
+    margin-top: 0.3rem;
+    margin-bottom: -0.6rem;
+}
+
+.input-error {
+    border-color: #d32f2f !important;
+}
+
+.notificacion {
+    background-color: #dff0d8;
+    color: #3c763d;
+    padding: 1rem;
+    border-radius: 5px;
+    margin: 1rem auto;
+    text-align: center;
+    width: 90%;
+    max-width: 600px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    font-weight: bold;
+    opacity: 0;
+    animation: aparecer 0.5s ease-out forwards;
+}
+
+/* Estilo general del popup */
+.popup-contenedor {
+    text-align: center;
+    max-width: 250px;
+    margin: 0 auto;
+}
+
+/* Título en popup */
+.popup-titulo {
+    color: #b32d00;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+/* Dirección */
+.popup-direccion {
+    color: #444;  /* Gris más oscuro para mejor lectura */
+    font-size: 0.95rem;
+}
+
+/* Tipo de lugar */
+.popup-tipo {
+    color: #666;  /* Un gris un poquito más claro */
+    font-size: 0.9rem;
+}
+
+/* Botón */
+/* Botón del popup */
+.popup-boton {
+    background-color: #007bff;
+    color: #ffffff !important; /* 🔥 FORZAR blanco, 100% */
+    padding: 8px 14px;
+    border-radius: 5px;
+    text-decoration: none;
+    display: inline-block;
+    font-weight: bold;
+    margin-top: 8px;
+    font-size: 1rem;
+    transition: background-color 0.3s, transform 0.3s;
+    text-align: center;
+    opacity: 1 !important; /* 🔥 FORZAR visibilidad */
+}
+
+
+.popup-boton:hover {
+    background-color: #0056b3;
+    transform: scale(1.05);
+    color: #ffffff !important; /* 🔥 Mantener blanco aún cuando pasas el mouse */
+}
+
+@keyframes aparecer {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes desaparecer {
+    from { opacity: 1; }
+    to { opacity: 0; transform: translateY(-10px); }
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.6);
+    }
+    70% {
+        transform: scale(1.07);
+        box-shadow: 0 0 0 12px rgba(0, 123, 255, 0);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
+    }
+}
+
+
+/* Aplicar el pulso sólo cuando se abre el popup */
+.popup-boton.pulse:hover {
+    animation: pulse 1s infinite;
+    transform: scale(1.05); /* Lo agrandamos apenas */
+}

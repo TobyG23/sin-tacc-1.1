@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Editar Ubicación</title>
+    <link rel="stylesheet" href="/static/css/formulario.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <style>
+        #mapa-editar {
+            height: 400px;
+            margin-top: 20px;
+            border-radius: 10px;
+        }
+        .btn-guardar {
+            margin-top: 20px;
+            background-color: #4caf50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Editar Ubicación: {{ lugar.nombre }}</h1>
+
+    <form method="POST">
+        <div id="mapa-editar" style="height: 400px; margin-top: 20px; border-radius: 10px;"></div>
+        <input type="hidden" name="lat" id="lat">
+        <input type="hidden" name="lng" id="lng">
+
+        <button type="submit" class="btn-guardar">✅ Guardar nueva ubicación</button>
+    </form>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Asegura que se envíen números válidos para Leaflet
+            var latInicial = {{ (lugar.lat if lugar.lat is not none else -27.45) | tojson }};
+            var lngInicial = {{ (lugar.lng if lugar.lng is not none else -58.98) | tojson }};
+        
+            var mapaEditar = L.map('mapa-editar').setView([latInicial, lngInicial], 13);
+        
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(mapaEditar);
+        
+            var marcador = L.marker([latInicial, lngInicial], { draggable: true }).addTo(mapaEditar);
+        
+            document.getElementById('lat').value = latInicial;
+            document.getElementById('lng').value = lngInicial;
+        
+            marcador.on('dragend', function (e) {
+                var posicion = marcador.getLatLng();
+                document.getElementById('lat').value = posicion.lat;
+                document.getElementById('lng').value = posicion.lng;
+            });
+        
+            setTimeout(() => {
+                mapaEditar.invalidateSize();
+            }, 500);
+        });
+        </script>
+        
+        
+        
+    
+    <script src="/static/js/formulario.js"></script>
+    
+        
+        
+        
+    
+
+</body>
+</html>

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa Sin TACC</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Flash messages -->
+    <script src="/static/js/flash.js"></script>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <!-- Tu CSS personalizado -->
+    <link rel="stylesheet" href="/static/css/style.css">
+    
+</head>
+<body>
+
+    <!-- 🧭 Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-danger">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">🌽 Sin TACC Mapa</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/">Inicio</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/sugerir">Sugerir Lugar</a>
+                    </li>
+                
+                    {% if current_user.is_authenticated and current_user.is_admin %}
+                        <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('dashboard') }}">🛠️ Panel de Administración</a>
+                        </li>
+                    {% endif %}
+                    {% if current_user.is_authenticated %}
+                            <a class="nav-link disabled" href="#">👤 {{ current_user.email }}</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-outline-light btn-sm ms-2" href="/logout">🚪 Cerrar sesión</a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="/login">Iniciar Sesión</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/register">Registrarse</a>
+                        </li>
+                    {% endif %}
+                </ul>
+                
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    {% if request.args.get('enviado') == 'ok' %}
+    <div id="notificacion" class="notificacion">
+    ✅ ¡Gracias! Tu sugerencia fue enviada correctamente.
+    </div>
+
+    <audio id="audioSuccess" src="/static/sounds/success.mp3" preload="auto"></audio>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const n = document.getElementById('notificacion');
+            const audio = document.getElementById('audioSuccess');
+    
+            if (n && audio) {
+                audio.play();
+                setTimeout(() => {
+                    n.style.display = 'none';
+                }, 4000);
+            }
+        });
+    </script>
+
+    <script>
+        setTimeout(() => {
+        const n = document.getElementById('notificacion');
+            if (n) n.style.display = 'none';
+        }, 4000); // Oculta después de 4 segundos
+    </script>
+    {% endif %}
+
+    <!-- Muestra mensajes flash que existan -->
+    <div class="container mt-3">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- 🌍 Mapa principal -->
+    <div id="map" style="height: 90vh; width: 100%;"></div>
+
+    <!-- 📜 Footer -->
+    <footer class="text-center mt-4 mb-2 text-muted">
+        <p>© 2025 Mapa Sin TACC - Hecho con ❤️ para la comunidad celíaca.</p>
+    </footer>
+
+    <script> const lugares = {{lugares | tojson}}
+    console.log("lugares cargados:", lugares)
+    </script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Leaflet.markercluster CSS y JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
+    <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+
+    <!-- Tu JS personalizado -->
+
+    <script src="/static/js/mapa.js"></script>
+    
+</body>
+
+
+</html>

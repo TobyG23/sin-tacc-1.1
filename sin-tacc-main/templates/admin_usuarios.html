@@ -1,0 +1,46 @@
+{% extends 'base_admin.html' %}
+
+{% block content %}
+<h2>👥 Gestión de Usuarios</h2>
+<table class="table table-bordered">
+  <thead>
+    <tr>
+      <th>Email</th>
+      <th>¿Es admin?</th>
+      <th>Acción</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for usuario in usuarios %}
+    <tr>
+      <td>{{ usuario.email }}</td>
+      <td>{{ 'Sí' if usuario.is_admin else 'No' }}</td>
+      <td>
+        {% if usuario.id != current_user.id %}
+          <a href="{{ url_for('toggle_admin', id=usuario.id) }}"
+             class="btn btn-sm {% if usuario.is_admin %}btn-danger{% else %}btn-success{% endif %}">
+             {% if usuario.is_admin %}Quitar Admin{% else %}Hacer Admin{% endif %}
+          </a>
+        {% else %}
+          <span class="text-muted">No editable</span>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<div class="paginacion">
+  {% if usuarios.has_prev %}
+    <a href="{{ url_for('admin_usuarios', page=usuarios.prev_num) }}">← Anterior</a>
+  {% endif %}
+
+  <span>Página {{ usuarios.page }} de {{ usuarios.pages }}</span>
+
+  {% if usuarios.has_next %}
+    <a href="{{ url_for('admin_usuarios', page=usuarios.next_num) }}">Siguiente →</a>
+  {% endif %}
+</div>
+
+
+{% endblock %}
