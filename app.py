@@ -470,11 +470,11 @@ def toggle_admin(id):
     return redirect(url_for('admin_usuarios'))
 
 
-@app.route("/init_db")
-def init_db():
-    from app import db
-    db.create_all()
-    return "✅ Tablas creadas en Neon"
+#@app.route("/init_db")
+#def init_db():
+    #from app import db
+    #db.create_all()
+    #return "✅ Tablas creadas en Neon"
 
 
 
