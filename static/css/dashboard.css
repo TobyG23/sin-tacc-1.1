@@ -49,11 +49,13 @@ body {
 }
 
 .tarjeta-lugar {
-    background-color: #ffffff;
-    padding: 15px;
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background-color: #ffffff;
 }
+
+body.modo-oscuro .tarjeta-lugar {
+  background-color: #1e1e1e;
+}
+
 
 .tarjeta-lugar h3 {
     margin-top: 0;
@@ -341,6 +343,12 @@ body.modo-oscuro .btn-eliminar:hover {
     canvas {
       width: 100% !important;
       height: auto !important;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .admin-navbar {
+      position: static;
     }
   }
   

@@ -376,3 +376,10 @@ body.modo-oscuro .btn-filtro:hover {
     }
   }
   
+
+  @media (max-width: 768px) {
+    .admin-navbar {
+      position: static;
+    }
+  }
+  
