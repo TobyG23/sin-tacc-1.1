@@ -11,7 +11,7 @@ from models import db, LugarSugerido, Usuario, LogAccion
 app = Flask(__name__)
 app.secret_key = 'gokuesdios123'  # 🔥 Cambiar para producción
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://neondb_owner:npg_NdKPSa7rQ1et@ep-snowy-thunder-a4gsx6gn-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
@@ -469,6 +469,10 @@ def toggle_admin(id):
     flash(f"Permisos actualizados para {usuario.email}.", "success")
     return redirect(url_for('admin_usuarios'))
 
+@app.route('/init_db')
+def init_db():
+    db.create_all()
+    return "Tablas creadas"
 
 
 
