@@ -335,3 +335,44 @@ body.modo-oscuro .btn-filtro:hover {
     background-color: #888;
     color: #222;
   }
+
+  @media (max-width: 768px) {
+    .contenedor-dashboard,
+    .contenedor-revisar {
+      padding: 10px;
+      margin: 10px;
+    }
+  
+    .tarjeta-lugar {
+      padding: 12px;
+      font-size: 14px;
+    }
+  
+    .estadisticas {
+      grid-template-columns: 1fr;
+    }
+  
+    .admin-navbar nav {
+      flex-direction: column;
+      gap: 10px;
+      align-items: center;
+    }
+  
+    .btn-exportar,
+    .btn-volver {
+      padding: 8px 12px;
+      font-size: 14px;
+    }
+  
+    table {
+      font-size: 14px;
+      overflow-x: auto;
+      display: block;
+    }
+  
+    canvas {
+      width: 100% !important;
+      height: auto !important;
+    }
+  }
+  
