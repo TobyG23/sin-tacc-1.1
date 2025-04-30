@@ -469,10 +469,13 @@ def toggle_admin(id):
     flash(f"Permisos actualizados para {usuario.email}.", "success")
     return redirect(url_for('admin_usuarios'))
 
-@app.route('/init_db')
+
+@app.route("/init_db")
 def init_db():
+    from app import db
     db.create_all()
-    return "Tablas creadas"
+    return "✅ Tablas creadas en Neon"
+
 
 
 
