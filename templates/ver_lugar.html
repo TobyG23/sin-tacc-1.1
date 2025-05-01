@@ -1,0 +1,27 @@
+{% extends "base_admin.html" %}
+{% block content %}
+<h1>{{ lugar.nombre }}</h1>
+
+<form method="POST">
+  <label>Puntuación (1 a 5):</label>
+  <input type="number" name="puntuacion" min="1" max="5" required>
+
+  <label>Comentario:</label>
+  <textarea name="comentario"></textarea>
+
+  <button type="submit">Enviar Review</button>
+</form>
+
+<hr>
+<h3>Reseñas:</h3>
+{% for review in reviews %}
+  <div>
+    <strong>{{ review.usuario.email }}</strong> – {{ review.puntuacion }}⭐
+    <p>{{ review.comentario }}</p>
+    <small>{{ review.fecha.strftime('%d/%m/%Y %H:%M') }}</small>
+    <hr>
+  </div>
+{% else %}
+  <p>No hay reviews todavía.</p>
+{% endfor %}
+{% endblock %}

@@ -56,3 +56,16 @@ class LogAccion(db.Model):
 
     admin = db.relationship("Usuario", foreign_keys=[admin_id], backref="acciones_realizadas")
     usuario_afectado = db.relationship("Usuario", foreign_keys=[usuario_afectado_id], backref="acciones_recibidas")
+
+class Review(db.Model):
+    __tablename__ = 'reviews'
+    id = db.Column(db.Integer, primary_key=True)
+    puntuacion = db.Column(db.Integer, nullable=False)  # de 1 a 5
+    comentario = db.Column(db.Text)
+    fecha = db.Column(db.DateTime, default=datetime.utcnow)
+
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
+    lugar_id = db.Column(db.Integer, db.ForeignKey('lugar_sugerido.id'), nullable=False)
+
+    usuario = db.relationship('Usuario', backref='reviews')
+    lugar = db.relationship('LugarSugerido', backref='reviews')

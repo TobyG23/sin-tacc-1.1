@@ -5,7 +5,10 @@ from flask import Flask, render_template, request, redirect, url_for, flash, abo
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from markupsafe import escape
-from models import db, LugarSugerido, Usuario, LogAccion
+from models import db, LugarSugerido, Usuario, Review
+from datetime import datetime
+from sqlalchemy import func
+
 
 
 app = Flask(__name__)
@@ -29,8 +32,27 @@ def load_user(user_id):
 
 @app.route('/')
 def ver_mapa():
-    lugares = LugarSugerido.query.filter_by(aprobado=True).all()
-    return render_template('mapa.html', lugares=[l.to_dict() for l in lugares])
+    resultados = db.session.query(
+        LugarSugerido,
+        func.avg(Review.puntuacion).label("promedio")
+    ).outerjoin(Review).group_by(LugarSugerido.id).all()
+
+    lugares = []
+    for lugar, promedio in resultados:
+        lugares.append({
+            'id': lugar.id,
+            'nombre': lugar.nombre,
+            'direccion': lugar.direccion,
+            'ciudad': lugar.ciudad,
+            'provincia': lugar.provincia,
+            'lat': lugar.lat,
+            'lng': lugar.lng,
+            'tipo': lugar.tipo,
+            'promedio': round(promedio or 0, 1)
+        })
+
+    return render_template("mapa.html", lugares=lugares)
+
 
 @app.route('/sugerir', methods=['GET', 'POST'])
 @login_required
@@ -126,6 +148,33 @@ def sugerir():
         return redirect(url_for('ver_mapa', enviado='ok'))
 
     return render_template('formulario.html')
+
+
+#Sistema de reviews
+@app.route('/lugar/<int:lugar_id>', methods=['GET', 'POST'])
+@login_required
+def ver_lugar(lugar_id):
+    lugar = LugarSugerido.query.get_or_404(lugar_id)
+
+    if request.method == 'POST':
+        puntuacion = int(request.form.get('puntuacion'))
+        comentario = request.form.get('comentario')
+
+        nueva_review = Review(
+            puntuacion=puntuacion,
+            comentario=comentario,
+            usuario_id=current_user.id,
+            lugar_id=lugar.id,
+            fecha=datetime.utcnow()
+        )
+        db.session.add(nueva_review)
+        db.session.commit()
+        flash("✅ Review enviada con éxito", "success")
+        return redirect(url_for('ver_lugar', lugar_id=lugar.id))
+
+    reviews = Review.query.filter_by(lugar_id=lugar.id).order_by(Review.fecha.desc()).all()
+    return render_template('ver_lugar.html', lugar=lugar, reviews=reviews)
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
