@@ -1,9 +1,24 @@
 
-const mapa = L.map('map').setView([-27.4581, -58.9756], 15);
+const mapa = L.map('map');
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap contributors'
-}).addTo(mapa);
+// Intentar centrar en la ubicación del usuario
+if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+        function (position) {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            mapa.setView([lat, lng], 15);
+        },
+        function () {
+            // Si falla o se deniega, usar una ubicación por defecto (Resistencia)
+            mapa.setView([-27.4581, -58.9756], 13);
+        }
+    );
+} else {
+    // Si no hay soporte para geolocalización
+    mapa.setView([-27.4581, -58.9756], 13);
+}
+
 
 console.log(lugares);
 
