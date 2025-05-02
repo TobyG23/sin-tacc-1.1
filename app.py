@@ -8,7 +8,17 @@ from markupsafe import escape
 from models import db, LugarSugerido, Usuario, Review
 from datetime import datetime
 from sqlalchemy import func
+from functools import wraps
 
+
+
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or not current_user.is_admin:
+            abort(403)
+        return f(*args, **kwargs)
+    return decorated_function
 
 
 app = Flask(__name__)
@@ -148,6 +158,26 @@ def sugerir():
         return redirect(url_for('ver_mapa', enviado='ok'))
 
     return render_template('formulario.html')
+
+
+@app.route('/lugar/<int:id>/destacar', methods=['POST'])
+@login_required
+@admin_required
+def destacar_lugar(id):
+    lugar = LugarSugerido.query.get_or_404(id)
+    lugar.destacado = True
+    db.session.commit()
+
+    return redirect(url_for('revisar_lugares'))
+
+@app.route('/lugar/<int:id>/quitar_destacado', methods=['POST'])
+@login_required
+@admin_required
+def quitar_destacado(id):
+    lugar = LugarSugerido.query.get_or_404(id)
+    lugar.destacado = False
+    db.session.commit()
+    return redirect(url_for('revisar_lugares'))
 
 
 #Sistema de reviews

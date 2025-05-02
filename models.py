@@ -20,6 +20,8 @@ class LugarSugerido(db.Model):
     fecha_envio = db.Column(db.Date, default=date.today)
     lat = db.Column(db.Float, nullable=True)
     lng = db.Column(db.Float, nullable=True)
+    destacado = db.Column(db.Boolean, default=False)
+
 
     def to_dict(self):
         return {
