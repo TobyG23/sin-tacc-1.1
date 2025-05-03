@@ -3,6 +3,7 @@ import csv
 from io import StringIO
 from flask import Flask, render_template, request, redirect, url_for, flash, abort, Response
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
+from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
 from markupsafe import escape
 from models import db, LugarSugerido, Usuario, Review
@@ -35,6 +36,8 @@ login_manager.login_message_category = 'info'
 
 with app.app_context():
     db.create_all()
+
+migrate = Migrate(app, db)
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -212,13 +215,24 @@ def register():
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
+        es_comercio = request.form.get("es_comercio") == "true"
+        nombre_comercio = request.form.get("nombre_comercio") if es_comercio else None
+        ya_registrado = request.form.get("ya_registrado") if es_comercio else None
+
 
         if Usuario.query.filter_by(email=email).first():
             flash('❌ El correo ya está registrado.', 'danger')
             return redirect(url_for('register'))
 
         hash = generate_password_hash(password)
-        nuevo_usuario = Usuario(email=email, password=hash)
+        nuevo_usuario = Usuario(
+        email=email,
+        password=hash,
+        es_comercio=es_comercio,
+        nombre_comercio=nombre_comercio,
+        ya_registrado_en_mapa=(ya_registrado == "si")
+        )
+
         db.session.add(nuevo_usuario)
         db.session.commit()
 

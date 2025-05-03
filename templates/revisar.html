@@ -39,6 +39,10 @@
       {% else %}
         <span class="badge badge-pendiente">🕓 Pendiente</span>
       {% endif %}
+      {% if not lugar.lat or not lugar.lng %}
+      <a href="{{ url_for('editar_ubicacion', lugar_id=lugar.id) }}" class="btn btn-warning" style="margin-top: 10px; display:inline-block;">🗺️ Editar ubicación</a>
+      {% endif %}
+
       <td>
         {% if lugar.destacado %}
           <span style="color:gold;">⭐ Destacado</span><br>

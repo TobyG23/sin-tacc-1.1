@@ -32,23 +32,22 @@
         <div id="mapa-editar" style="height: 400px; margin-top: 20px; border-radius: 10px;"></div>
         <input type="hidden" name="lat" id="lat">
         <input type="hidden" name="lng" id="lng">
-
+        <button type="button" id="btn-geolocalizar" style="margin-top: 10px;">📍 Geolocalizar por dirección</button>
         <button type="submit" class="btn-guardar">✅ Guardar nueva ubicación</button>
     </form>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // Asegura que se envíen números válidos para Leaflet
             var latInicial = {{ (lugar.lat if lugar.lat is not none else -27.45) | tojson }};
             var lngInicial = {{ (lugar.lng if lugar.lng is not none else -58.98) | tojson }};
         
-            var mapaEditar = L.map('mapa-editar').setView([latInicial, lngInicial], 13);
+            window.mapaEditar = L.map('mapa-editar').setView([latInicial, lngInicial], 13);
         
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; OpenStreetMap contributors'
             }).addTo(mapaEditar);
         
-            var marcador = L.marker([latInicial, lngInicial], { draggable: true }).addTo(mapaEditar);
+            window.marcador = L.marker([latInicial, lngInicial], { draggable: true }).addTo(mapaEditar);
         
             document.getElementById('lat').value = latInicial;
             document.getElementById('lng').value = lngInicial;
@@ -62,8 +61,32 @@
             setTimeout(() => {
                 mapaEditar.invalidateSize();
             }, 500);
+        
+            document.getElementById('btn-geolocalizar').addEventListener('click', async function () {
+                const direccion = "{{ lugar.direccion|e }} {{ lugar.ciudad|e }} {{ lugar.provincia|e }}";
+                const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(direccion)}`;
+        
+                try {
+                    const response = await fetch(url);
+                    const data = await response.json();
+                    if (data.length > 0) {
+                        const lat = parseFloat(data[0].lat);
+                        const lon = parseFloat(data[0].lon);
+                        marcador.setLatLng([lat, lon]);
+                        mapaEditar.setView([lat, lon], 15);
+                        document.getElementById('lat').value = lat;
+                        document.getElementById('lng').value = lon;
+                    } else {
+                        alert("No se encontró la dirección. Verificá que esté escrita correctamente.");
+                    }
+                } catch (error) {
+                    alert("Error al intentar geolocalizar automáticamente.");
+                    console.error(error);
+                }
+            });
         });
         </script>
+        
         
         
         
