@@ -44,13 +44,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const icono = L.icon({
                 iconUrl: lugar.destacado
-                    ? '/static/img/icono-patrocinado.gif'
+                    ? '/static/img/icono-patrocinado.png'
                     : (lugar.promedio >= 4.5
                         ? '/static/img/sin_gluten_oro.png'
                         : '/static/img/sin_gluten_legal-01.png'),
                 iconSize: [48, 48],
                 iconAnchor: [24, 48],
-                popupAnchor: [0, -48]
+                popupAnchor: [0, -48],
+                className: lugar.destacado ? 'animated-icon' : ''
             });
             
 

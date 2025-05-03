@@ -186,3 +186,21 @@ textarea:invalid + .error-message {
     animation: pulse 1s infinite;
     transform: scale(1.05); /* Lo agrandamos apenas */
 }
+
+
+.animated-icon {
+    animation: pulseGlow 2s infinite;
+    filter: drop-shadow(0 0 6px #ff00cc) drop-shadow(0 0 10px #ffcc00);
+}
+
+@keyframes pulseGlow {
+    0% {
+        filter: drop-shadow(0 0 6px #ff00cc) drop-shadow(0 0 10px #ffcc00);
+    }
+    50% {
+        filter: drop-shadow(0 0 10px #00ffcc) drop-shadow(0 0 14px #00ccff);
+    }
+    100% {
+        filter: drop-shadow(0 0 6px #ff00cc) drop-shadow(0 0 10px #ffcc00);
+    }
+}

@@ -58,7 +58,8 @@ def ver_mapa():
             'lat': lugar.lat,
             'lng': lugar.lng,
             'tipo': lugar.tipo,
-            'promedio': round(promedio or 0, 1)
+            'promedio': round(promedio or 0, 1),
+            'destacado': lugar.destacado
         })
 
     return render_template("mapa.html", lugares=lugares)
