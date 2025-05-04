@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Dona y elimina la publicidad{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <h2 class="text-center text-success mb-4">💰 Doná y ayudá al proyecto</h2>
+    <p class="text-center">
+        Si donás a través de Cafecito, podés solicitar que se desactive la publicidad de tu cuenta.
+        Solo necesitás enviarnos una captura del comprobante desde aquí.
+    </p>
+
+    <div class="text-center mb-4">
+        <a href='https://cafecito.app/glutymap' rel='noopener' target='_blank'>
+            <img srcset='https://cdn.cafecito.app/imgs/buttons/button_1.png 1x, https://cdn.cafecito.app/imgs/buttons/button_1_2x.png 2x, https://cdn.cafecito.app/imgs/buttons/button_1_3.75x.png 3.75x' 
+                 src='https://cdn.cafecito.app/imgs/buttons/button_1.png' 
+                 alt='Invitame un café en cafecito.app' />
+        </a>
+    </div>
+
+    <form action="{{ url_for('enviar_comprobante') }}" method="POST" enctype="multipart/form-data" class="border p-4 rounded bg-light">
+        <div class="mb-3">
+            <label for="comprobante" class="form-label">📎 Adjuntar comprobante</label>
+            <input type="file" class="form-control" id="comprobante" name="comprobante" accept="image/*,.pdf" required>
+        </div>
+        <button type="submit" class="btn btn-success">📤 Enviar comprobante</button>
+    </form>
+</div>
+{% endblock %}

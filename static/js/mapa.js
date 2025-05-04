@@ -1,11 +1,15 @@
 
 document.addEventListener('DOMContentLoaded', function () {
     const mapa = L.map('map');
+    let todosLosLugares = lugares;
+    let primerMarcador = null;
+    let marcadoresActuales = [];
+    const grupoCluster = L.markerClusterGroup();
 
     function cargarLugares(filtrados) {
-        grupoCluster.clearLayers(); // Borra marcadores anteriores
+        grupoCluster.clearLayers();
         marcadoresActuales = [];
-    
+
         filtrados.forEach(lugar => {
             if (lugar.lat !== null && lugar.lng !== null) {
                 const popup = `
@@ -22,7 +26,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         </a>
                     </div>
                 `;
-    
+
                 const icono = L.icon({
                     iconUrl: lugar.destacado
                         ? '/static/img/icono-patrocinado.png'
@@ -34,61 +38,52 @@ document.addEventListener('DOMContentLoaded', function () {
                     popupAnchor: [0, -48],
                     className: lugar.destacado ? 'animated-icon' : ''
                 });
-    
+
                 const marker = L.marker([lugar.lat, lugar.lng], { icon: icono }).bindPopup(popup);
                 grupoCluster.addLayer(marker);
                 marcadoresActuales.push(marker);
             }
         });
-    
+
         mapa.addLayer(grupoCluster);
     }
 
     const buscador = document.getElementById("buscador");
-        if (buscador) {
-            buscador.addEventListener("input", function () {
-                const texto = this.value.toLowerCase();
-                const filtrados = todosLosLugares.filter(l => l.nombre.toLowerCase().includes(texto));
-                cargarLugares(filtrados);
+    if (buscador) {
+        buscador.addEventListener("input", function () {
+            const texto = this.value.toLowerCase();
+            const filtrados = todosLosLugares.filter(l => l.nombre.toLowerCase().includes(texto));
+            cargarLugares(filtrados);
 
-                // Si hay solo un resultado, centramos y abrimos su popup
-                if (filtrados.length === 1 && filtrados[0].lat && filtrados[0].lng) {
-                    const iconoInvisible = L.divIcon({ className: 'invisible-icon', iconSize: [0, 0] });
+            if (filtrados.length === 1 && filtrados[0].lat && filtrados[0].lng) {
+                const iconoInvisible = L.divIcon({ className: 'invisible-icon', iconSize: [0, 0] });
 
-                    const marcador = L.marker([filtrados[0].lat, filtrados[0].lng], { icon: iconoInvisible })
-                        .addTo(mapa)
-                        .bindPopup(`<strong>${filtrados[0].nombre}</strong><br>${filtrados[0].direccion}`)
-                        .openPopup();
+                const marcador = L.marker([filtrados[0].lat, filtrados[0].lng], { icon: iconoInvisible })
+                    .addTo(mapa)
+                    .bindPopup(`<strong>${filtrados[0].nombre}</strong><br>${filtrados[0].direccion}`)
+                    .openPopup();
 
-
-                    setTimeout(() => mapa.removeLayer(marcador), 4000); // lo quitamos luego de mostrar
-                }
-            });
-        }
-
-
-    
+                setTimeout(() => mapa.removeLayer(marcador), 4000);
+            }
+        });
+    }
 
     function filtrarDestacados() {
         const soloDestacados = document.getElementById("filtroDestacados").checked;
         const soloMejores = document.getElementById("filtroMejores").checked;
-    
+
         let filtrados = todosLosLugares;
-    
+
         if (soloDestacados) {
             filtrados = filtrados.filter(l => l.destacado);
         }
-    
+
         if (soloMejores) {
             filtrados = filtrados.filter(l => l.promedio >= 4.5);
         }
-    
+
         cargarLugares(filtrados);
     }
-    
-    
-    
-    
 
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
@@ -109,14 +104,7 @@ document.addEventListener('DOMContentLoaded', function () {
         attribution: '&copy; OpenStreetMap contributors'
     }).addTo(mapa);
 
-    console.log(lugares);
-    let todosLosLugares = lugares;
-    let primerMarcador = null;
-    let marcadoresActuales = [];
-    const grupoCluster = L.markerClusterGroup();
-
     cargarLugares(todosLosLugares);
-
 
     mapa.addLayer(grupoCluster);
 
@@ -144,9 +132,6 @@ document.addEventListener('DOMContentLoaded', function () {
         checkboxMejores.addEventListener("change", filtrarDestacados);
     }
 
-
-
-    // mini mapa
     const miniMapa = L.map('mini-mapa').setView([-27.4581, -58.9756], 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors'

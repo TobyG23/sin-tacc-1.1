@@ -48,10 +48,12 @@ class Usuario(db.Model, UserMixin):
     email = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
     is_admin = db.Column(db.Boolean, default=False)
-
     es_comercio = db.Column(db.Boolean, default=False)
     nombre_comercio = db.Column(db.String(100))
     ya_registrado_en_mapa = db.Column(db.Boolean, default=False)
+    dono = db.Column(db.Boolean, default=False)
+    publicidad_activa = db.Column(db.Boolean, default=True)
+
 
     def __repr__(self):
         return f'<Usuario {self.email}>'

@@ -5,6 +5,7 @@ from PIL import Image
 from io import StringIO
 from flask import Flask, render_template, request, redirect, url_for, flash, abort, Response
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
+from flask_mail import Mail, Message
 from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
@@ -13,6 +14,8 @@ from models import db, LugarSugerido, Usuario, Review
 from datetime import datetime
 from sqlalchemy import func
 from functools import wraps
+
+
 
 
 
@@ -26,10 +29,20 @@ def admin_required(f):
 
 
 app = Flask(__name__)
-app.secret_key = 'gokuesdios123'  # 🔥 Cambiar para producción
+app.secret_key = 'cjva hjzf mzwd ucxa'  # 🔥 Cambiar para producción
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://neondb_owner:npg_NdKPSa7rQ1et@ep-snowy-thunder-a4gsx6gn-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Configurar Flask-Mail
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = 'glutymap.info@gmail.com'  # Cambiá por el tuyo
+app.config['MAIL_PASSWORD'] = 'cjva hjzf mzwd ucxa'  # Ideal usar clave de aplicación
+app.config['MAIL_DEFAULT_SENDER'] = 'glutymap.info@gmail.com'
+
+mail = Mail(app)
 
 db.init_app(app)
 login_manager = LoginManager()
@@ -69,6 +82,7 @@ def ver_mapa():
         })
 
     return render_template("mapa.html", lugares=lugares)
+
 
 
 @app.route('/sugerir', methods=['GET', 'POST'])
@@ -359,20 +373,44 @@ def subir_banner():
 
     if request.method == 'POST':
         archivo = request.files['banner']
+        titulo = request.form.get('titulo_banner', '').strip()
+        link = request.form.get('link_banner', '').strip()
+
         if archivo:
             filename = secure_filename(archivo.filename)
             path = os.path.join('static/banners', filename)
 
             try:
-                # Validación: intentar abrir la imagen con PIL
+                # Validar imagen
                 img = Image.open(archivo)
-                img.verify()  # Verifica que sea una imagen válida
-                archivo.seek(0)  # Volver al inicio del archivo, necesario después de verify()
+                img.verify()
+                archivo.seek(0)
                 archivo.save(path)
 
+                # Actualiza el lugar
                 lugar.banner_url = filename
                 db.session.commit()
-                flash("✅ Banner subido correctamente", "success")
+
+                # Crea o actualiza la publicidad
+                from models import BannerPublicidad
+
+                banner_existente = BannerPublicidad.query.filter_by(imagen_url=filename).first()
+                if banner_existente:
+                    banner_existente.titulo = titulo or f"Promoción de {lugar.nombre}"
+                    banner_existente.link = link or "#"
+                    banner_existente.activo = True
+                else:
+                    nuevo_banner = BannerPublicidad(
+                        titulo=titulo or f"Promoción de {lugar.nombre}",
+                        link=link or "#",
+                        imagen_url=filename,
+                        activo=True
+                    )
+                    db.session.add(nuevo_banner)
+
+                db.session.commit()
+                flash("✅ Banner subido correctamente y promoción activada.", "success")
+
             except Exception as e:
                 flash("❌ El archivo no es una imagen válida.", "danger")
                 print("Error al validar la imagen:", e)
@@ -381,6 +419,7 @@ def subir_banner():
 
     return render_template('subir_banner.html', lugar=lugar)
 
+
 @app.route('/admin/quitar_banner/<int:lugar_id>', methods=['POST'])
 @login_required
 def quitar_banner(lugar_id):
@@ -388,8 +427,15 @@ def quitar_banner(lugar_id):
         abort(403)
 
     lugar = LugarSugerido.query.get_or_404(lugar_id)
-    lugar.banner_url = None  # Quita la publicidad
-    lugar.destacado = False  # Quita el destacado
+    lugar.banner_url = None
+    lugar.destacado = False
+
+    # 🔴 Buscar y eliminar o desactivar el banner publicitario si existe
+    from models import BannerPublicidad
+    banner = BannerPublicidad.query.filter_by(titulo=f"Promoción de {lugar.nombre}").first()
+    if banner:
+        db.session.delete(banner)  # O alternativamente: banner.activo = False
+
     db.session.commit()
     flash("🚫 Publicidad eliminada del comercio.", "info")
     return redirect(url_for('recomendados'))
@@ -398,8 +444,55 @@ def quitar_banner(lugar_id):
 @app.context_processor
 def inject_banners():
     from models import BannerPublicidad
+
+    # Protección extra por si current_user no tiene atributo (raro pero posible)
+    if current_user.is_authenticated:
+        try:
+            if not current_user.publicidad_activa:
+                return dict(banners=[])
+        except AttributeError:
+            pass  # Seguimos mostrando banners por si falta el atributo
+
     banners = BannerPublicidad.query.filter_by(activo=True).all()
+    
+    # Solo agregar extras si el usuario NO es comercio (ejemplo, más segmentación)
+    if not current_user.is_authenticated or not getattr(current_user, 'es_comercio', False):
+        banners.append({
+            "titulo": "🏪 ¡Patrocina tu comercio!",
+            "link": "/subir-banner",
+            "imagen_url": "/static/img/patrocina.png"
+        })
+        banners.append({
+            "titulo": "💰 ¡Dona para no tener publicidad!",
+            "link": "https://cafecito.app/glutymap",
+            "imagen_url": "/static/img/donar.png"
+        })
+
     return dict(banners=banners)
+
+
+
+@app.route('/donar')
+@login_required
+def donar():
+    return render_template('donar.html')
+
+@app.route('/enviar-comprobante', methods=['POST'])
+@login_required
+def enviar_comprobante():
+    archivo = request.files['comprobante']
+    if archivo:
+        msg = Message("📥 Nuevo comprobante de donación",
+                      recipients=["tucorreo@gmail.com"])  # Tu correo de recepción
+        msg.body = f"El usuario {current_user.email} ha subido un comprobante de donación."
+        msg.attach(archivo.filename, archivo.mimetype, archivo.read())
+        mail.send(msg)
+        flash("✅ Comprobante enviado correctamente. ¡Gracias por tu apoyo!", "success")
+    else:
+        flash("❌ No se adjuntó ningún archivo.", "danger")
+    return redirect(url_for('donar'))
+
+
 
 
 @app.route('/recomendados')
@@ -680,6 +773,7 @@ def toggle_admin(id):
 
     usuario = Usuario.query.get_or_404(id)
     if usuario.id == current_user.id:
+        login_user(usuario)  # 👈 Esto actualiza current_user en la sesión
         flash("No podés cambiar tu propio permiso de admin.", "warning")
         return redirect(url_for('admin_usuarios'))
 
@@ -699,6 +793,36 @@ def toggle_admin(id):
     db.session.commit()
 
     flash(f"Permisos actualizados para {usuario.email}.", "success")
+    return redirect(url_for('admin_usuarios'))
+
+@app.route('/admin/usuarios/toggle_publicidad/<int:id>')
+@login_required
+def toggle_publicidad(id):
+    if not current_user.is_admin:
+        abort(403)
+
+    usuario = Usuario.query.get_or_404(id)
+    usuario.publicidad_activa = not usuario.publicidad_activa
+    db.session.commit()
+
+    estado = "activada" if usuario.publicidad_activa else "desactivada"
+    flash(f"Publicidad {estado} para {usuario.email}.", "info")
+    return redirect(url_for('admin_usuarios'))
+
+@app.route('/admin/usuarios/desvincular_comercio/<int:id>', methods=['POST'])
+@login_required
+def desvincular_comercio(id):
+    if not current_user.is_admin:
+        abort(403)
+
+    lugar = LugarSugerido.query.filter_by(usuario_id=id).first()
+    if lugar:
+        lugar.usuario_id = None
+        db.session.commit()
+        flash(f"Comercio desvinculado de {lugar.nombre}.", "info")
+    else:
+        flash("Este usuario no tiene comercio vinculado.", "warning")
+
     return redirect(url_for('admin_usuarios'))
 
 

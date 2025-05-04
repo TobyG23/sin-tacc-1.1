@@ -210,3 +210,9 @@ textarea:invalid + .error-message {
     border: none;
 }
 
+#banner-publicitario {
+    display: none;
+    height: 0;
+}
+
+
