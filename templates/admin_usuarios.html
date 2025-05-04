@@ -1,14 +1,16 @@
 {% extends 'base_admin.html' %}
 
 {% block content %}
-<h2>👥 Gestión de Usuarios</h2>
-<table class="table table-bordered">
+<h2 class="text-center">👥 Gestión de Usuarios</h2>
+<table class="table table-bordered text-center align-middle">
   <thead>
     <tr>
       <th>Email</th>
       <th>¿Es admin?</th>
-      <th>Acción</th>
       <th>Publicidad</th>
+      <th>¿Es comercio?</th>
+      <th>Nombre del comercio</th>
+      <th>Acciones</th>
     </tr>
   </thead>
   <tbody>
@@ -16,61 +18,36 @@
     <tr>
       <td>{{ usuario.email }}</td>
       <td>{{ 'Sí' if usuario.is_admin else 'No' }}</td>
+      <td>{{ 'Sí' if usuario.publicidad_activa else 'No' }}</td>
+      <td>{{ 'Sí' if usuario.es_comercio else 'No' }}</td>
       <td>
-  {% if usuario.id != current_user.id %}
-    <a href="{{ url_for('toggle_admin', id=usuario.id) }}"
-       class="btn btn-sm {% if usuario.is_admin %}btn-danger{% else %}btn-success{% endif %}">
-       {% if usuario.is_admin %}Quitar Admin{% else %}Hacer Admin{% endif %}
-    </a>
-    <br>
-    <a href="{{ url_for('toggle_publicidad', id=usuario.id) }}"
-       class="btn btn-sm mt-2 {% if usuario.publicidad_activa %}btn-outline-danger{% else %}btn-outline-success{% endif %}">
-       {% if usuario.publicidad_activa %}
-         ❌ Quitar publicidad
-       {% else %}
-         ✅ Activar publicidad
-       {% endif %}
-    </a>
-    {% if usuario.lugar_asociado %}
-      <form method="post" action="{{ url_for('desvincular_comercio', id=usuario.id) }}" style="display:inline;">
-        <button type="submit" class="btn btn-warning btn-sm mt-2">🔗 Desvincular Comercio</button>
-      </form>
-    {% endif %}
-  {% else %}
-    <span class="text-muted">No editable</span>
-  {% endif %}
-</td>
-<td>
-  {% if usuario.id != current_user.id %}
-    <a href="{{ url_for('toggle_admin', id=usuario.id) }}"
-       class="btn btn-sm {% if usuario.is_admin %}btn-danger{% else %}btn-success{% endif %}">
-       {% if usuario.is_admin %}Quitar Admin{% else %}Hacer Admin{% endif %}
-    </a>
-    <br>
-    <a href="{{ url_for('toggle_publicidad', id=usuario.id) }}"
-       class="btn btn-sm mt-2 {% if usuario.publicidad_activa %}btn-outline-danger{% else %}btn-outline-success{% endif %}">
-       {% if usuario.publicidad_activa %}
-         ❌ Quitar publicidad
-       {% else %}
-         ✅ Activar publicidad
-       {% endif %}
-    </a>
-    {% if usuario.lugar_asociado %}
-      <form method="post" action="{{ url_for('desvincular_comercio', id=usuario.id) }}" style="display:inline;">
-        <button type="submit" class="btn btn-warning btn-sm mt-2">🔗 Desvincular Comercio</button>
-      </form>
-    {% endif %}
-  {% else %}
-    <span class="text-muted">No editable</span>
-  {% endif %}
-</td>
-     
+        {% if usuario.es_comercio and usuario.nombre_comercio %}
+          {{ usuario.nombre_comercio }}
+        {% else %}
+          <span class="text-muted">—</span>
+        {% endif %}
+      </td>
+      <td>
+        {% if usuario.id != current_user.id %}
+          <a href="{{ url_for('toggle_publicidad', id=usuario.id) }}"
+             class="btn btn-sm mt-2 {% if usuario.publicidad_activa %}btn-outline-danger{% else %}btn-outline-success{% endif %}">
+             {% if usuario.publicidad_activa %}❌ Quitar publicidad{% else %}✅ Activar publicidad{% endif %}
+          </a><br>
+          {% if usuario.lugar_asociado %}
+            <form method="post" action="{{ url_for('desvincular_comercio', id=usuario.id) }}" style="display:inline;">
+              <button type="submit" class="btn btn-warning btn-sm mt-2">🔗 Desvincular Comercio</button>
+            </form>
+          {% endif %}
+        {% else %}
+          <span class="text-muted">No editable</span>
+        {% endif %}
+      </td>
     </tr>
     {% endfor %}
   </tbody>
 </table>
 
-<div class="paginacion">
+<div class="paginacion text-center mt-3">
   {% if usuarios.has_prev %}
     <a href="{{ url_for('admin_usuarios', page=usuarios.prev_num) }}">← Anterior</a>
   {% endif %}
@@ -81,6 +58,4 @@
     <a href="{{ url_for('admin_usuarios', page=usuarios.next_num) }}">Siguiente →</a>
   {% endif %}
 </div>
-
-
 {% endblock %}
