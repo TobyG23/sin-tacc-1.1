@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Destacar Mi Comercio{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-warning">⭐ Destacar Comercio</h2>
+
+    {% if lugar.destacado %}
+        <div class="alert alert-success">
+            Ya estás destacado en el mapa. Gracias por apoyar la comunidad 💛
+        </div>
+        <a href="{{ url_for('mi_comercio') }}" class="btn btn-outline-secondary">🔙 Volver a Mi Comercio</a>
+    {% else %}
+        <p>Al destacar tu comercio:</p>
+        <ul>
+            <li>🔸 Aparecerás con un icono especial en el mapa</li>
+            <li>🔸 Tendrás prioridad en las búsquedas y filtros</li>
+            <li>🔸 Apoyás el mantenimiento del proyecto</li>
+        </ul>
+
+        <form method="POST">
+            <button type="submit" class="btn btn-warning btn-lg mt-3">💳 Confirmar y destacar ahora</button>
+        </form>
+
+        <a href="{{ url_for('mi_comercio') }}" class="btn btn-outline-secondary mt-3">Cancelar</a>
+    {% endif %}
+</div>
+{% endblock %}

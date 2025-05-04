@@ -1,10 +1,13 @@
 import requests
 import csv
+import os
+from PIL import Image
 from io import StringIO
 from flask import Flask, render_template, request, redirect, url_for, flash, abort, Response
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 from markupsafe import escape
 from models import db, LugarSugerido, Usuario, Review
 from datetime import datetime
@@ -290,32 +293,167 @@ def revisar_lugares():
     return render_template('revisar.html', lugares=lugares)
 
 
-
-
-@app.route('/aprobar/<int:lugar_id>', methods=['POST'])
+@app.route('/mi-comercio')
 @login_required
-def aprobar_lugar(lugar_id):
+def mi_comercio():
+    if not current_user.es_comercio:
+        flash("⚠️ Esta sección es solo para comercios.", "warning")
+        return redirect(url_for('ver_mapa'))
+
+    lugar = LugarSugerido.query.filter_by(usuario_id=current_user.id).first()
+    promedio = None
+
+    if lugar:
+        reviews = lugar.reviews
+        if reviews:
+            promedio = round(sum(r.puntuacion for r in reviews) / len(reviews), 1)
+
+    return render_template("mi_comercio.html", lugar=lugar, promedio=promedio)
+
+@app.route('/mi-comercio/estadisticas')
+@login_required
+def estadisticas_comercio():
+    if not current_user.es_comercio:
+        abort(403)
+
+    lugar = LugarSugerido.query.filter_by(usuario_id=current_user.id).first()
+    if not lugar:
+        flash("No se encontró tu comercio en el mapa.", "warning")
+        return redirect(url_for("mi_comercio"))
+
+    reviews = Review.query.filter_by(lugar_id=lugar.id).order_by(Review.fecha.desc()).all()
+    promedio = None
+    if reviews:
+        promedio = round(sum(r.puntuacion for r in reviews) / len(reviews), 1)
+
+    return render_template("estadisticas_comercio.html", lugar=lugar, promedio=promedio, total_reviews=len(reviews), reviews=reviews)
+
+@app.route('/mi-comercio/destacar', methods=['GET', 'POST'])
+@login_required
+def destacar_comercio():
+    if not current_user.es_comercio:
+        abort(403)
+
+    lugar = LugarSugerido.query.filter_by(usuario_id=current_user.id).first()
+
+    if not lugar:
+        flash("Tu comercio no está vinculado todavía al mapa.", "warning")
+        return redirect(url_for("mi_comercio"))
+
+    if request.method == 'POST':
+        lugar.destacado = True
+        db.session.commit()
+        flash("⭐ Tu comercio ahora está destacado en el mapa.", "success")
+        return redirect(url_for('mi_comercio'))
+
+    return render_template("destacar_comercio.html", lugar=lugar)
+
+@app.route('/subir-banner', methods=['GET', 'POST'])
+@login_required
+def subir_banner():
+    if not current_user.es_comercio:
+        flash("⚠️ Acceso solo para comercios.", "warning")
+        return redirect(url_for('ver_mapa'))
+
+    lugar = LugarSugerido.query.filter_by(usuario_id=current_user.id).first_or_404()
+
+    if request.method == 'POST':
+        archivo = request.files['banner']
+        if archivo:
+            filename = secure_filename(archivo.filename)
+            path = os.path.join('static/banners', filename)
+
+            try:
+                # Validación: intentar abrir la imagen con PIL
+                img = Image.open(archivo)
+                img.verify()  # Verifica que sea una imagen válida
+                archivo.seek(0)  # Volver al inicio del archivo, necesario después de verify()
+                archivo.save(path)
+
+                lugar.banner_url = filename
+                db.session.commit()
+                flash("✅ Banner subido correctamente", "success")
+            except Exception as e:
+                flash("❌ El archivo no es una imagen válida.", "danger")
+                print("Error al validar la imagen:", e)
+
+            return redirect(url_for('mi_comercio'))
+
+    return render_template('subir_banner.html', lugar=lugar)
+
+@app.route('/admin/quitar_banner/<int:lugar_id>', methods=['POST'])
+@login_required
+def quitar_banner(lugar_id):
     if not current_user.is_admin:
         abort(403)
 
     lugar = LugarSugerido.query.get_or_404(lugar_id)
+    lugar.banner_url = None  # Quita la publicidad
+    lugar.destacado = False  # Quita el destacado
+    db.session.commit()
+    flash("🚫 Publicidad eliminada del comercio.", "info")
+    return redirect(url_for('recomendados'))
 
-    if lugar.lat is None or lugar.lng is None:
-        # Si no tiene coordenadas, intentamos geocodificar
-        direccion_completa = f"{lugar.direccion}, {lugar.ciudad}, {lugar.provincia}, {lugar.pais}"
-        lat, lng = geocodificar_direccion(direccion_completa)
-        if lat and lng:
-            lugar.lat = lat
-            lugar.lng = lng
+
+@app.context_processor
+def inject_banners():
+    from models import BannerPublicidad
+    banners = BannerPublicidad.query.filter_by(activo=True).all()
+    return dict(banners=banners)
+
+
+@app.route('/recomendados')
+def recomendados():
+    lugares = LugarSugerido.query.filter_by(destacado=True).all()
+    return render_template('recomendados.html', lugares=lugares)
+
+
+
+@app.route('/vincular/<int:lugar_id>', methods=['GET', 'POST'])
+@login_required
+def vincular_lugar(lugar_id):
+    if not current_user.is_admin:
+        flash("Acceso denegado", "danger")
+        return redirect(url_for('revisar_lugares'))
+
+    lugar = LugarSugerido.query.get_or_404(lugar_id)
+    usuarios = Usuario.query.all()
+
+    if request.method == 'POST':
+        usuario_id = request.form.get('usuario_id')
+        usuario = Usuario.query.get(usuario_id)
+
+        if usuario:
+            lugar.usuario_id = usuario.id
+            db.session.commit()
+            flash(f"Lugar '{lugar.nombre}' vinculado con {usuario.email}", "success")
+            return redirect(url_for('revisar_lugares'))
         else:
-            flash('⚠️ No se pudo geolocalizar la dirección automáticamente.', 'warning')
+            flash("Usuario no encontrado", "danger")
 
+    return render_template("vincular_lugar.html", lugar=lugar, usuarios=usuarios)
+
+
+@app.route('/aprobar/<int:id>', methods=['POST'])
+@login_required
+def aprobar_lugar(id):
+    if not current_user.is_admin:
+        flash("Solo los administradores pueden aprobar lugares.", "danger")
+        return redirect(url_for('revisar_lugares'))
+
+    lugar = LugarSugerido.query.get_or_404(id)
     lugar.aprobado = True
     lugar.rechazado = False
-    db.session.commit()
 
-    flash('✅ Lugar aprobado correctamente.', 'success')
+    # Si el usuario que lo sugirió es un comercio, lo vinculamos
+    if lugar.usuario and lugar.usuario.es_comercio:
+        lugar.usuario_id = lugar.usuario.id
+
+
+    db.session.commit()
+    flash(f"Lugar '{lugar.nombre}' aprobado correctamente.", "success")
     return redirect(url_for('revisar_lugares'))
+
 
 @app.route('/rechazar/<int:lugar_id>', methods=['POST'])
 @login_required

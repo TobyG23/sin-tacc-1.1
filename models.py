@@ -21,6 +21,10 @@ class LugarSugerido(db.Model):
     lat = db.Column(db.Float, nullable=True)
     lng = db.Column(db.Float, nullable=True)
     destacado = db.Column(db.Boolean, default=False)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=True)
+    usuario = db.relationship('Usuario', backref='lugar_asociado')
+    banner_url = db.Column(db.String(255))
+
 
 
     def to_dict(self):
@@ -75,3 +79,12 @@ class Review(db.Model):
 
     usuario = db.relationship('Usuario', backref='reviews')
     lugar = db.relationship('LugarSugerido', backref='reviews')
+
+class BannerPublicidad(db.Model):
+    __tablename__ = 'banners_publicidad'
+    id = db.Column(db.Integer, primary_key=True)
+    titulo = db.Column(db.String(200), nullable=False)
+    link = db.Column(db.String(300))
+    imagen_url = db.Column(db.String(300))
+    activo = db.Column(db.Boolean, default=True)
+    creado = db.Column(db.DateTime, default=datetime.utcnow)

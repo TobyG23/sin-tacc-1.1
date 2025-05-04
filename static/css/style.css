@@ -204,3 +204,9 @@ textarea:invalid + .error-message {
         filter: drop-shadow(0 0 6px #ff00cc) drop-shadow(0 0 10px #ffcc00);
     }
 }
+
+.invisible-icon {
+    background: none;
+    border: none;
+}
+

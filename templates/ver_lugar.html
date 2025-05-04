@@ -1,27 +1,59 @@
-{% extends "base_admin.html" %}
+{% extends "base.html" %}
+
+{% block title %}{{ lugar.nombre }}{% endblock %}
+
 {% block content %}
-<h1>{{ lugar.nombre }}</h1>
+<div class="container mt-4">
+    <h2 class="mb-3 text-center text-danger">{{ lugar.nombre }}</h2>
 
-<form method="POST">
-  <label>Puntuación (1 a 5):</label>
-  <input type="number" name="puntuacion" min="1" max="5" required>
+    {% if current_user.is_authenticated and current_user.es_comercio and lugar.usuario_id == current_user.id %}
+        <div class="alert alert-info text-center">
+            🌟 Esta es la vista pública de tu comercio.
+        </div>
+    {% endif %}
 
-  <label>Comentario:</label>
-  <textarea name="comentario"></textarea>
+    <div class="card mb-4">
+        <div class="card-body">
+            <p><strong>Dirección:</strong> {{ lugar.direccion }}, {{ lugar.ciudad }}, {{ lugar.provincia }}</p>
+            <p><strong>Tipo:</strong> {{ lugar.tipo }}</p>
+            {% if promedio %}
+                <p><strong>Puntuación promedio:</strong> ⭐ {{ promedio }} / 5</p>
+            {% endif %}
+        </div>
+    </div>
 
-  <button type="submit">Enviar Review</button>
-</form>
+    {% if current_user.is_authenticated %}
+    <div class="card mb-4">
+        <div class="card-header">Dejar una reseña</div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('ver_lugar', lugar_id=lugar.id) }}">
+                <div class="mb-3">
+                    <label for="puntuacion" class="form-label">Puntuación (1 a 5)</label>
+                    <input type="number" name="puntuacion" id="puntuacion" min="1" max="5" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="comentario" class="form-label">Comentario</label>
+                    <textarea name="comentario" id="comentario" class="form-control" rows="2" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-success">Enviar Review</button>
+            </form>
+        </div>
+    </div>
+    {% else %}
+        <p class="text-muted">Iniciá sesión para dejar una review.</p>
+    {% endif %}
 
-<hr>
-<h3>Reseñas:</h3>
-{% for review in reviews %}
-  <div>
-    <strong>{{ review.usuario.email }}</strong> – {{ review.puntuacion }}⭐
-    <p>{{ review.comentario }}</p>
-    <small>{{ review.fecha.strftime('%d/%m/%Y %H:%M') }}</small>
-    <hr>
-  </div>
-{% else %}
-  <p>No hay reviews todavía.</p>
-{% endfor %}
+    <h4 class="mb-3">Reseñas:</h4>
+    {% if reviews %}
+        {% for review in reviews %}
+            <div class="border rounded p-3 mb-2">
+                <strong>⭐ {{ review.puntuacion }}</strong>
+                <p>{{ review.comentario }}</p>
+                <small class="text-muted">por {{ review.usuario.email }}</small>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p class="text-muted">No hay reviews todavía.</p>
+    {% endif %}
+</div>
 {% endblock %}

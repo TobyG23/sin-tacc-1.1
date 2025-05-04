@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4 text-danger">🏪 Mi Comercio</h2>
+    
+
+    <div class="card shadow p-3">
+        <h4>{{ current_user.nombre_comercio }}</h4>
+        <p><strong>¿Ya registrado en mapa?</strong> {{ 'Sí' if current_user.ya_registrado_en_mapa else 'No' }}</p>
+
+        {% if lugar %}
+            <p><strong>Dirección:</strong> {{ lugar.direccion }}, {{ lugar.ciudad }}, {{ lugar.provincia }}</p>
+            <p><strong>Estado:</strong> 
+                {% if lugar.destacado %}<span class="text-warning">⭐ Destacado</span>{% else %}Normal{% endif %}
+            </p>
+            {% if promedio %}
+                <p><strong>Promedio de reviews:</strong> {{ promedio }} / 5</p>
+            {% endif %}
+            {% if lugar and lugar.destacado %}
+                <a href="{{ url_for('subir_banner') }}" class="btn btn-primary mt-3">📢 Subir banner publicitario</a>
+            {% endif %}
+
+            <a href="/lugar/{{ lugar.id }}" class="btn btn-outline-primary mt-2">🔍 Ver ficha pública</a>
+            <a href="{{ url_for('estadisticas_comercio') }}" class="btn btn-outline-success mt-2">📊 Ver estadísticas</a>
+            <a href="{{ url_for('destacar_comercio') }}" class="btn btn-warning mt-3">
+                ⭐ Quiero destacar mi comercio
+            </a>            
+        {% else %}
+            <div class="alert alert-info mt-3">
+                Todavía no vinculamos tu comercio al mapa. Una vez validado, aparecerá acá.
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

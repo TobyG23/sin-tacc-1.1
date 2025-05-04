@@ -31,7 +31,16 @@
   {% for lugar in lugares %}
   <div class="tarjeta-lugar">
     <h2>
+      {% if lugar.sugerido_por and lugar.sugerido_por.es_comercio %}
+          <span class="badge bg-info text-dark">Sugerido por comercio</span>
+      {% endif %}
       {{ lugar.nombre }}
+      {% if not lugar.usuario_id %}
+        <form method="GET" action="{{ url_for('vincular_lugar', lugar_id=lugar.id) }}">
+          <button type="submit" class="btn btn-outline-secondary btn-sm mt-1">🔗 Vincular a usuario</button>
+        </form>
+      {% endif %}
+
       {% if lugar.aprobado %}
         <span class="badge badge-aprobado">✅ Aprobado</span>
       {% elif lugar.rechazado %}
@@ -65,6 +74,12 @@
     {% else %}
       <p><strong>Fecha de envío:</strong> {{ lugar.fecha_envio.strftime('%d/%m/%Y') }}</p>
       <p><strong>Dirección:</strong> {{ lugar.direccion }}
+    {% if lugar.usuario_id %}
+      <p><strong>Vinculado con usuario:</strong> {{ lugar.usuario.email }}</p>
+    {% else %}
+      <p><strong>Vinculado con usuario:</strong> ❌ No</p>
+    {% endif %}
+
       {% if lugar.ciudad %}, {{ lugar.ciudad }}{% endif %}
       {% if lugar.provincia %}, {{ lugar.provincia }}{% endif %}
       </p>

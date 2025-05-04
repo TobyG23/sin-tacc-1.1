@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Estadísticas del Comercio{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4 text-success">📊 Estadísticas de Mi Comercio</h2>
+
+    {% if lugar %}
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card border-primary">
+                    <div class="card-body">
+                        <h5 class="card-title">Promedio de reviews</h5>
+                        <p class="display-6">{{ promedio or 'N/A' }} / 5</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card border-info">
+                    <div class="card-body">
+                        <h5 class="card-title">Cantidad total de reviews</h5>
+                        <p class="display-6">{{ total_reviews }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">Últimas Reseñas</div>
+            <div class="card-body">
+                {% if reviews %}
+                    {% for review in reviews[:5] %}
+                        <div class="border rounded p-3 mb-2">
+                            <strong>⭐ {{ review.puntuacion }}</strong>
+                            <p>{{ review.comentario }}</p>
+                            <small class="text-muted">{{ review.fecha.strftime('%d/%m/%Y') }}</small>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">Todavía no hay reseñas.</p>
+                {% endif %}
+            </div>
+        </div>
+
+    {% else %}
+        <div class="alert alert-warning">Tu comercio aún no está vinculado al mapa.</div>
+    {% endif %}
+</div>
+{% endblock %}

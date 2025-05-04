@@ -1,0 +1,22 @@
+{% extends "base_admin.html" %}
+
+{% block title %}Vincular Lugar{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h3 class="mb-4">🔗 Vincular lugar: <strong>{{ lugar.nombre }}</strong></h3>
+
+    <form method="POST">
+        <div class="mb-3">
+            <label for="usuario_id" class="form-label">Seleccionar usuario:</label>
+            <select class="form-select" name="usuario_id" required>
+                {% for usuario in usuarios %}
+                    <option value="{{ usuario.id }}">{{ usuario.email }} {% if usuario.es_comercio %}(Comercio){% endif %}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-success">✅ Vincular</button>
+        <a href="{{ url_for('revisar_lugares') }}" class="btn btn-secondary">↩️ Cancelar</a>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Mapa Sin TACC{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap y estilos -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+<!-- 🔺 Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-danger mt-5">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">🌽 Sin TACC Mapa</a>
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav ms-auto">
+                {% if current_user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('ver_mapa') }}">🏠 Inicio</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/sugerir">Sugerir Lugar</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('recomendados') }}">🌟 Recomendados</a>
+                    </li>                            
+                    {% if current_user.es_comercio %}
+                        <li class="nav-item"><a class="nav-link" href="/mi-comercio">🏪 Mi Comercio</a></li>
+                    {% endif %}
+                    {% if current_user.is_admin %}
+                        <li class="nav-item"><a class="nav-link" href="/dashboard">🛠️ Admin</a></li>
+                    {% endif %}
+                    <li class="nav-item"><a class="nav-link disabled" href="#">👤 {{ current_user.email }}</a></li>
+                    <li class="nav-item"><a class="btn btn-outline-light btn-sm ms-2" href="/logout">Cerrar sesión</a></li>
+                {% else %}
+                    <li class="nav-item"><a class="nav-link" href="/login">Iniciar sesión</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/register">Registrarse</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div id="banner-publicitario" class="text-center text-white bg-dark py-2 fixed-top" style="z-index:9999;">
+    <a id="banner-link" href="#" target="_blank" class="text-white text-decoration-none">
+        <strong id="banner-texto">🔁 Cargando promoción...</strong>
+    </a>
+</div>
+
+<!-- 📣 Mensajes flash -->
+<div class="container mt-3">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+</div>
+
+<!-- 💻 Contenido dinámico -->
+<div class="container mt-4">
+    {% block content %}{% endblock %}
+</div>
+
+<!-- 🔻 Footer -->
+<footer class="text-center mt-5 mb-3 text-muted">
+    <p>© 2025 Mapa Sin TACC - Hecho con ❤️ para la comunidad celíaca.</p>
+</footer>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+      const banners = {{ banners | tojson }};
+      let actual = 0;
+
+      function mostrarBanner() {
+          if (banners.length === 0) return;
+
+          const b = banners[actual];
+          document.getElementById('banner-texto').textContent = b.titulo;
+          document.getElementById('banner-link').href = b.link || '#';
+
+          document.getElementById('banner-publicitario').style.display = 'block';
+          actual = (actual + 1) % banners.length;
+      }
+
+      mostrarBanner();
+      setInterval(mostrarBanner, 60000); // cada 60 segundos
+  });
+</script>
+
+
+</body>
+</html>

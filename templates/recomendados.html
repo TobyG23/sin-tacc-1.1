@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Comercios Recomendados{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center text-warning mb-4">🌟 Comercios Recomendados</h2>
+
+    {% if lugares %}
+        <div class="row">
+            {% for lugar in lugares %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100 shadow-sm position-relative">
+                    {% if lugar.banner_url %}
+                        <a href="/lugar/{{ lugar.id }}">
+                            <img src="{{ url_for('static', filename='banners/' ~ lugar.banner_url) }}" class="card-img-top" alt="Banner de {{ lugar.nombre }}">
+                        </a>
+                    {% endif %}
+                    <!-- Botón de quitar banner SOLO si hay uno y el usuario es admin -->
+                    {% if current_user.is_authenticated and current_user.is_admin %}
+                    <div class="dropdown text-end me-2 mt-2" style="position: absolute; right: 10px; top: 10px;">
+                        <button class="btn btn-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            ⋮
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <form action="{{ url_for('quitar_banner', lugar_id=lugar.id) }}" method="post" onsubmit="return confirm('¿Quitar esta publicidad del comercio?')">
+                                    <button type="submit" class="dropdown-item text-danger">❌ Quitar de Recomendados</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                {% endif %}
+
+                    <div class="card-body">
+                        <h5 class="card-title">{{ lugar.nombre }}</h5>
+                        <p class="card-text">{{ lugar.ciudad }}, {{ lugar.provincia }}</p>
+                        <p class="card-text"><strong>Tipo:</strong> {{ lugar.tipo }}</p>
+                        <a href="/lugar/{{ lugar.id }}" class="btn btn-outline-primary">🔍 Ver más</a>
+                    </div>
+                </div>
+            </div>            
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info text-center">
+            Aún no hay comercios recomendados.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

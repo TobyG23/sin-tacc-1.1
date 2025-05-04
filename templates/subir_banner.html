@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Subir Banner{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-primary">📢 Subir Banner Publicitario</h2>
+
+    {% if lugar.banner_url %}
+        <p>Banner actual:</p>
+        <img src="{{ url_for('static', filename='banners/' + lugar.banner_url) }}" class="img-fluid mb-3" style="max-height:200px;">
+    {% endif %}
+
+    <form method="POST" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label for="banner" class="form-label">Elegí un archivo (JPG/PNG):</label>
+            <input type="file" name="banner" id="banner" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-success">📤 Subir</button>
+    </form>
+</div>
+{% endblock %}
