@@ -444,31 +444,27 @@ def quitar_banner(lugar_id):
 @app.context_processor
 def inject_banners():
     from models import BannerPublicidad
-
-    # Protección extra por si current_user no tiene atributo (raro pero posible)
-    if current_user.is_authenticated:
-        try:
-            if not current_user.publicidad_activa:
+    try:
+        if current_user.is_authenticated:
+            if hasattr(current_user, 'publicidad_activa') and not current_user.publicidad_activa:
                 return dict(banners=[])
-        except AttributeError:
-            pass  # Seguimos mostrando banners por si falta el atributo
+    except:
+        pass  # fallback si current_user falla por algún motivo
 
     banners = BannerPublicidad.query.filter_by(activo=True).all()
-    
-    # Solo agregar extras si el usuario NO es comercio (ejemplo, más segmentación)
-    if not current_user.is_authenticated or not getattr(current_user, 'es_comercio', False):
-        banners.append({
-            "titulo": "🏪 ¡Patrocina tu comercio!",
-            "link": "/subir-banner",
-            "imagen_url": "/static/img/patrocina.png"
-        })
-        banners.append({
-            "titulo": "💰 ¡Dona para no tener publicidad!",
-            "link": "https://cafecito.app/glutymap",
-            "imagen_url": "/static/img/donar.png"
-        })
+    banners.append({
+        "titulo": "🏪 ¡Patrocina tu comercio!",
+        "link": "/subir-banner",
+        "imagen_url": "/static/img/patrocina.png"
+    })
+    banners.append({
+        "titulo": "💰 ¡Dona para no tener publicidad!",
+        "link": "https://cafecito.app/glutymap",
+        "imagen_url": "/static/img/donar.png"
+    })
 
     return dict(banners=banners)
+
 
 
 

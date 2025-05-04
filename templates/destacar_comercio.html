@@ -16,12 +16,11 @@
         <ul>
             <li>🔸 Aparecerás con un icono especial en el mapa</li>
             <li>🔸 Tendrás prioridad en las búsquedas y filtros</li>
+            <li>🔸 Podras subir un banner publicitario</li>
             <li>🔸 Apoyás el mantenimiento del proyecto</li>
         </ul>
 
-        <form method="POST">
-            <button type="submit" class="btn btn-warning btn-lg mt-3">💳 Confirmar y destacar ahora</button>
-        </form>
+        <a href="{{ url_for('donar') }}" class="btn btn-warning btn-lg mt-3">💳 Donar y destacar ahora</a>
 
         <a href="{{ url_for('mi_comercio') }}" class="btn btn-outline-secondary mt-3">Cancelar</a>
     {% endif %}
