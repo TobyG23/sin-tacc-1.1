@@ -850,6 +850,14 @@ def desvincular_comercio(id):
     #return "✅ Tablas creadas en Neon"
 
 
+@app.route('/ads.txt')
+def ads_txt():
+    return Response(
+        "google.com, pub-6411447824601126, DIRECT, f08c47fec0942fa0",
+        mimetype='text/plain'
+    )
+
+
 
 
 if __name__ == '__main__':
