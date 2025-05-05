@@ -373,7 +373,9 @@ def subir_banner():
 
     if request.method == 'POST':
         archivo = request.files['banner']
-        titulo = request.form.get('titulo_banner', '').strip()
+        titulo = request.form.get('titulo_banner')
+        titulo = titulo.strip() if titulo and titulo.strip() != '' else None
+
         link = request.form.get('link_banner', '').strip()
 
         if archivo:
@@ -394,15 +396,18 @@ def subir_banner():
                 # Crea o actualiza la publicidad
                 from models import BannerPublicidad
 
+                titulo_final = titulo if titulo else f"Promoción de {lugar.nombre}"
+                link_final = link if link else "#"
+
                 banner_existente = BannerPublicidad.query.filter_by(imagen_url=filename).first()
                 if banner_existente:
-                    banner_existente.titulo = titulo or f"Promoción de {lugar.nombre}"
-                    banner_existente.link = link or "#"
+                    banner_existente.titulo = titulo_final
+                    banner_existente.link = link_final
                     banner_existente.activo = True
                 else:
                     nuevo_banner = BannerPublicidad(
-                        titulo=titulo or f"Promoción de {lugar.nombre}",
-                        link=link or "#",
+                        titulo=titulo_final,
+                        link=link_final,
                         imagen_url=filename,
                         activo=True
                     )
@@ -420,6 +425,7 @@ def subir_banner():
     return render_template('subir_banner.html', lugar=lugar)
 
 
+
 @app.route('/admin/quitar_banner/<int:lugar_id>', methods=['POST'])
 @login_required
 def quitar_banner(lugar_id):
@@ -427,18 +433,23 @@ def quitar_banner(lugar_id):
         abort(403)
 
     lugar = LugarSugerido.query.get_or_404(lugar_id)
+
+    # Guardamos la URL antes de borrarla
+    banner_url_original = lugar.banner_url
+
     lugar.banner_url = None
     lugar.destacado = False
 
-    # 🔴 Buscar y eliminar o desactivar el banner publicitario si existe
+    # Buscar el banner correspondiente por la URL guardada
     from models import BannerPublicidad
-    banner = BannerPublicidad.query.filter_by(titulo=f"Promoción de {lugar.nombre}").first()
+    banner = BannerPublicidad.query.filter_by(imagen_url=banner_url_original).first()
     if banner:
-        db.session.delete(banner)  # O alternativamente: banner.activo = False
+        banner.activo = False  # 👈 Lo desactivamos
 
     db.session.commit()
     flash("🚫 Publicidad eliminada del comercio.", "info")
     return redirect(url_for('recomendados'))
+
 
 
 @app.context_processor
@@ -452,18 +463,28 @@ def inject_banners():
         pass  # fallback si current_user falla por algún motivo
 
     banners = BannerPublicidad.query.filter_by(activo=True).all()
-    banners.append({
+
+    # Convertimos los objetos a diccionarios
+    banners_dict = [{
+        "titulo": b.titulo,
+        "link": b.link,
+        "imagen_url": "/static/banners/" + b.imagen_url
+    } for b in banners]
+
+    # Agregamos los dos banners fijos
+    banners_dict.append({
         "titulo": "🏪 ¡Patrocina tu comercio!",
         "link": "/subir-banner",
         "imagen_url": "/static/img/patrocina.png"
     })
-    banners.append({
+    banners_dict.append({
         "titulo": "💰 ¡Dona para no tener publicidad!",
         "link": "https://cafecito.app/glutymap",
         "imagen_url": "/static/img/donar.png"
     })
 
-    return dict(banners=banners)
+    return dict(banners=banners_dict)
+
 
 
 
