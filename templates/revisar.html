@@ -3,9 +3,7 @@
 {% extends 'base_admin.html' %}
 
 {% block title %}Revisar Sugerencias{% endblock %}
-
 {% block body_class %}revisar{% endblock %}
-
 {% block content %}
 
 {% with messages = get_flashed_messages(with_categories=true) %}
@@ -26,9 +24,15 @@
   <a href="/revisar?estado=rechazado" class="btn-filtro rechazado">❌ Rechazados</a>
 </div>
 
+<form method="get" class="mb-4 filtros-busqueda">
+  <input type="text" name="nombre" placeholder="Buscar por nombre" value="{{ filtro_nombre }}">
+  <input type="text" name="pais" placeholder="Filtrar por país" value="{{ filtro_pais }}">
+  <button type="submit">🔍 Filtrar</button>
+</form>
+
 <main class="contenedor-revisar">
   <h1>📋 Sugerencias para revisar</h1>
-  {% for lugar in lugares %}
+  {% for lugar in lugares.items %}
   <div class="tarjeta-lugar">
     <h2>
       {% if lugar.sugerido_por and lugar.sugerido_por.es_comercio %}
@@ -74,11 +78,11 @@
     {% else %}
       <p><strong>Fecha de envío:</strong> {{ lugar.fecha_envio.strftime('%d/%m/%Y') }}</p>
       <p><strong>Dirección:</strong> {{ lugar.direccion }}
-    {% if lugar.usuario_id %}
-      <p><strong>Vinculado con usuario:</strong> {{ lugar.usuario.email }}</p>
-    {% else %}
-      <p><strong>Vinculado con usuario:</strong> ❌ No</p>
-    {% endif %}
+      {% if lugar.usuario_id %}
+        <p><strong>Vinculado con usuario:</strong> {{ lugar.usuario.email }}</p>
+      {% else %}
+        <p><strong>Vinculado con usuario:</strong> ❌ No</p>
+      {% endif %}
 
       {% if lugar.ciudad %}, {{ lugar.ciudad }}{% endif %}
       {% if lugar.provincia %}, {{ lugar.provincia }}{% endif %}
@@ -88,32 +92,34 @@
     <p><strong>Tipo:</strong> {{ lugar.tipo }}</p>
     <p><strong>Comentarios:</strong> {{ lugar.comentarios or "Sin comentarios" }}</p>
 
-    {% if not lugar.aprobado and not lugar.rechazado %}
     <div class="botones-acciones">
-      <form method="POST" action="/aprobar/{{ lugar.id }}">
-        <button type="submit" class="btn-aprobar">✔️ Aprobar</button>
-      </form>
+      {% if not lugar.aprobado and not lugar.rechazado %}
+        <form method="POST" action="/aprobar/{{ lugar.id }}">
+          <button type="submit" class="btn-aprobar">✔️ Aprobar</button>
+        </form>
 
-      <form method="POST" action="/rechazar/{{ lugar.id }}">
-        <button type="submit" class="btn-rechazar">❌ Rechazar</button>
+        <form method="POST" action="/rechazar/{{ lugar.id }}">
+          <button type="submit" class="btn-rechazar">❌ Rechazar</button>
+        </form>
+      {% endif %}
+      <form method="POST" action="/admin/eliminar/{{ lugar.id }}">
+        <button type="submit" class="btn btn-outline-danger btn-sm">🗑️ Eliminar</button>
       </form>
     </div>
-    {% endif %}
   </div>
   {% endfor %}
 </main>
 
 <div class="paginacion">
   {% if lugares.has_prev %}
-    <a href="{{ url_for('revisar_lugares', estado=request.args.get('estado'), page=lugares.prev_num) }}">← Anterior</a>
+    <a href="{{ url_for('revisar_lugares', estado=request.args.get('estado'), page=lugares.prev_num, nombre=filtro_nombre, pais=filtro_pais) }}">← Anterior</a>
   {% endif %}
 
   <span>Página {{ lugares.page }} de {{ lugares.pages }}</span>
 
   {% if lugares.has_next %}
-    <a href="{{ url_for('revisar_lugares', estado=request.args.get('estado'), page=lugares.next_num) }}">Siguiente →</a>
+    <a href="{{ url_for('revisar_lugares', estado=request.args.get('estado'), page=lugares.next_num, nombre=filtro_nombre, pais=filtro_pais) }}">Siguiente →</a>
   {% endif %}
 </div>
-
 
 {% endblock %}

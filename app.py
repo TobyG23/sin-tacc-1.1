@@ -290,15 +290,18 @@ def logout():
     logout_user()
     return redirect(url_for('ver_mapa'))
 
+# Reemplazo completo de la ruta /dashboard por una vista mejorada en /revisar
 @app.route('/revisar')
 @login_required
 def revisar_lugares():
     if not current_user.is_admin:
         abort(403)
 
-    estado = request.args.get('estado')
+    estado = request.args.get('estado')  # pendiente / aprobado / rechazado
+    filtro_pais = request.args.get('pais', '').strip().lower()
+    filtro_nombre = request.args.get('nombre', '').strip().lower()
     page = request.args.get('page', 1, type=int)
-    per_page = 6  # podés cambiar la cantidad por página
+    per_page = 6
 
     query = LugarSugerido.query
 
@@ -309,9 +312,16 @@ def revisar_lugares():
     elif estado == 'rechazado':
         query = query.filter_by(rechazado=True)
 
+    if filtro_pais:
+        query = query.filter(LugarSugerido.pais.ilike(f"%{filtro_pais}%"))
+
+    if filtro_nombre:
+        query = query.filter(LugarSugerido.nombre.ilike(f"%{filtro_nombre}%"))
+
     lugares = query.order_by(LugarSugerido.fecha_envio.desc()).paginate(page=page, per_page=per_page)
 
-    return render_template('revisar.html', lugares=lugares)
+    return render_template('revisar.html', lugares=lugares, estado=estado, filtro_pais=filtro_pais, filtro_nombre=filtro_nombre)
+
 
 
 @app.route('/mi-comercio')

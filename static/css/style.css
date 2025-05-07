@@ -215,4 +215,24 @@ textarea:invalid + .error-message {
     height: 0;
 }
 
-
+.filtros-busqueda {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    
+  }
+  
+.filtros-busqueda input,
+.filtros-busqueda button {
+    padding: 6px 10px;
+    font-size: 14px;
+    height: 38px;
+  }
+  
+.filtros-busqueda input {
+    width: 200px;
+  }
+  
+  
