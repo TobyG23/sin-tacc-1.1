@@ -1,6 +1,8 @@
 import requests
 import csv
 import os
+from dotenv import load_dotenv
+load_dotenv()
 from PIL import Image
 from io import StringIO
 from flask import Flask, render_template, request, redirect, url_for, flash, abort, Response
@@ -29,7 +31,7 @@ def admin_required(f):
 
 
 app = Flask(__name__)
-app.secret_key = 'cjva hjzf mzwd ucxa'  # 🔥 Cambiar para producción
+app.secret_key = os.getenv('SECRET_KEY')
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://neondb_owner:npg_NdKPSa7rQ1et@ep-snowy-thunder-a4gsx6gn-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -39,7 +41,7 @@ app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USERNAME'] = 'glutymap.info@gmail.com'  # Cambiá por el tuyo
-app.config['MAIL_PASSWORD'] = 'cjva hjzf mzwd ucxa'  # Ideal usar clave de aplicación
+app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')  # Ideal usar clave de aplicación
 app.config['MAIL_DEFAULT_SENDER'] = 'glutymap.info@gmail.com'
 
 mail = Mail(app)
@@ -179,6 +181,28 @@ def sugerir():
 
             db.session.add(nuevo_lugar)
             db.session.commit()
+
+            try:
+                msg = Message("📩 ¡Tu sugerencia fue recibida!", recipients=[current_user.email])
+                msg.body = f"""
+            Hola {current_user.email} 👋
+
+            Tu sugerencia para agregar el lugar "{nuevo_lugar.nombre}" ha sido recibida exitosamente en GlutyMap 🎉
+
+            📌 Dirección: {nuevo_lugar.direccion}, {nuevo_lugar.ciudad}, {nuevo_lugar.provincia}, {nuevo_lugar.pais}
+            🏷️ Tipo: {nuevo_lugar.tipo}
+
+            Nuestro equipo la revisará pronto y te avisaremos si es aprobada ✅
+
+            Gracias por sumar al mapa 🌍
+
+            — GlutyMap Team
+            """
+                mail.send(msg)
+            except Exception as e:
+                print("❌ Error al enviar confirmación al usuario:", e)
+
+
 
             return redirect(url_for('ver_mapa', enviado='ok'))
         
@@ -578,6 +602,24 @@ def aprobar_lugar(id):
 
 
     db.session.commit()
+
+    if lugar.usuario and lugar.usuario.email:
+        try:
+            msg = Message("✅ ¡Tu lugar fue aprobado en GlutyMap!", recipients=[lugar.usuario.email])
+            msg.body = f"""
+    Hola {lugar.usuario.email} 👋
+
+    Tu sugerencia para el lugar "{lugar.nombre}" fue aprobada y ya está visible en GlutyMap 🎉
+
+    ¡Gracias por contribuir con la comunidad sin TACC!
+
+    — GlutyMap Team
+    """
+            mail.send(msg)
+        except Exception as e:
+            print("❌ Error al enviar mail de aprobación:", e)
+
+
     flash(f"Lugar '{lugar.nombre}' aprobado correctamente.", "success")
     return redirect(url_for('revisar_lugares'))
 
@@ -592,6 +634,25 @@ def rechazar_lugar(lugar_id):
     lugar.aprobado = False
     lugar.rechazado = True
     db.session.commit()
+
+    if lugar.usuario and lugar.usuario.email:
+        try:
+            msg = Message("❌ Tu sugerencia fue rechazada en GlutyMap", recipients=[lugar.usuario.email])
+            msg.body = f"""
+    Hola {lugar.usuario.email} 👋
+
+    Lamentablemente, tu sugerencia para el lugar "{lugar.nombre}" no pudo ser aprobada.
+
+    Puede que no cumpla con los criterios de la plataforma, esté duplicada o falte información clave.
+
+    Te agradecemos igualmente por tomarte el tiempo de enviarla ❤️
+
+    — GlutyMap Team
+    """
+            mail.send(msg)
+        except Exception as e:
+            print("❌ Error al enviar mail de rechazo:", e)
+
 
     flash('❌ Lugar rechazado.', 'danger')
     return redirect(url_for('revisar_lugares'))
