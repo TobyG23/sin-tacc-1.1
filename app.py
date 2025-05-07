@@ -88,97 +88,104 @@ def ver_mapa():
 @app.route('/sugerir', methods=['GET', 'POST'])
 @login_required
 def sugerir():
-    if request.method == 'POST':
-        print(request.form)
+        if request.method == 'POST':
+            print(request.form)
 
-        nombre = escape(request.form.get('nombre', '')).strip()
-        direccion = escape(request.form.get('direccion', '')).strip()
-        ciudad = escape(request.form.get('ciudad', '')).strip()
-        provincia = escape(request.form.get('provincia', '')).strip()
-        pais = escape(request.form.get('pais', '')).strip()
-        tipo = escape(request.form.get('tipo', '')).strip()
-        comentarios = escape(request.form.get('comentarios', '')).strip()
+            nombre = escape(request.form.get('nombre', '')).strip()
+            direccion = escape(request.form.get('direccion', '')).strip()
+            ciudad = escape(request.form.get('ciudad', '')).strip()
+            provincia = escape(request.form.get('provincia', '')).strip()
+            pais = escape(request.form.get('pais', '')).strip()
+            tipo = escape(request.form.get('tipo', '')).strip()
+            comentarios = escape(request.form.get('comentarios', '')).strip()
 
-        nombre_mapa = escape(request.form.get('nombre_mapa', '')).strip()
-        tipo_mapa = escape(request.form.get('tipo_mapa', '')).strip()
-        comentarios_mapa = escape(request.form.get('comentarios_mapa', '')).strip()
+            nombre_mapa = escape(request.form.get('nombre_mapa', '')).strip()
+            tipo_mapa = escape(request.form.get('tipo_mapa', '')).strip()
+            comentarios_mapa = escape(request.form.get('comentarios_mapa', '')).strip()
 
-        lat = request.form.get('lat')
-        lng = request.form.get('lng')
+            lat = request.form.get('lat')
+            lng = request.form.get('lng')
 
-        # Validación básica de campos
-        errores = []
+            errores = []
 
-        #Modo manual
-        if not lat and not lng:
-            if len(nombre) < 3:
-                errores.append('El nombre debe tener al menos 3 caracteres.')
-            if len(direccion) < 3:
-                errores.append('La direccion debe tener al menos 3 caracteres.')
-            if len(ciudad) < 3:
-                errores.append('La ciudad debe tener al menos 3 caracteres.')
-            if len(provincia) < 3:
-                errores.append('La provincia debe tener al menos 3 caracteres.')
-            if len(tipo) < 3:
-                errores.append("El tipo de comercio debe tener al menos 3 caracteres.")
-        else:
-            if len(nombre_mapa) < 3:
-                errores.append("El nombre del comercio (por mapa) debe tener al menos 3 caracteres.")
-            if len(tipo_mapa) < 3:
-                errores.append("El tipo de comercio (por mapa) debe tener al menos 3 caracteres.")
-        # Comentarios (opcional, pero limitamos el largo)
-        if comentarios and len(comentarios) > 500:
-            errores.append("El comentario es demasiado largo (máx. 500 caracteres).")
-        if comentarios_mapa and len(comentarios_mapa) > 500:
-            errores.append("El comentario del mapa es demasiado largo (máx. 500 caracteres).")
+            if not lat and not lng:
+                if len(nombre) < 3:
+                    errores.append('El nombre debe tener al menos 3 caracteres.')
+                if len(direccion) < 3:
+                    errores.append('La direccion debe tener al menos 3 caracteres.')
+                if len(ciudad) < 3:
+                    errores.append('La ciudad debe tener al menos 3 caracteres.')
+                if len(provincia) < 3:
+                    errores.append('La provincia debe tener al menos 3 caracteres.')
+                if len(tipo) < 3:
+                    errores.append("El tipo de comercio debe tener al menos 3 caracteres.")
+            else:
+                if len(nombre_mapa) < 3:
+                    errores.append("El nombre del comercio (por mapa) debe tener al menos 3 caracteres.")
+                if len(tipo_mapa) < 3:
+                    errores.append("El tipo de comercio (por mapa) debe tener al menos 3 caracteres.")
 
-        # Si hay errores, los mostramos
-        if errores:
-            for error in errores:
-                flash("❌ " + error, 'danger')
-            return redirect(url_for('sugerir'))
+            if comentarios and len(comentarios) > 500:
+                errores.append("El comentario es demasiado largo (máx. 500 caracteres).")
+            if comentarios_mapa and len(comentarios_mapa) > 500:
+                errores.append("El comentario del mapa es demasiado largo (máx. 500 caracteres).")
 
-        if lat == '' or lat is None:
-            lat = None
-        if lng == '' or lng is None:
-            lng = None
-
-        try:
-            lat = float(lat) if lat else None
-            lng = float(lng) if lng else None
-        except ValueError:
-            lat, lng = None, None
-
-        usando_mapa = lat is not None and lng is not None
-
-        if usando_mapa:
-            if not nombre_mapa or not tipo_mapa:
-                flash('❌ Todos los campos obligatorios deben completarse.', 'danger')
-                return redirect(url_for('sugerir'))
-        else:
-            if not nombre or not direccion or not ciudad or not provincia or not pais or not tipo:
-                flash('❌ Todos los campos obligatorios deben completarse.', 'danger')
+            if errores:
+                for error in errores:
+                    flash("❌ " + error, 'danger')
                 return redirect(url_for('sugerir'))
 
-        nuevo_lugar = LugarSugerido(
-            nombre=nombre_mapa if usando_mapa else nombre,
-            direccion=direccion if not usando_mapa else 'Ubicación seleccionada en mapa',
-            ciudad=ciudad if not usando_mapa else '',
-            provincia=provincia if not usando_mapa else '',
-            pais=pais,
-            tipo=tipo_mapa if usando_mapa else tipo,
-            comentarios=comentarios_mapa if usando_mapa else comentarios,
-            lat=lat,
-            lng=lng
-        )
+            if lat == '' or lat is None:
+                lat = None
+            if lng == '' or lng is None:
+                lng = None
 
-        db.session.add(nuevo_lugar)
-        db.session.commit()
+            try:
+                lat = float(lat) if lat else None
+                lng = float(lng) if lng else None
+            except ValueError:
+                lat, lng = None, None
 
+            usando_mapa = lat is not None and lng is not None
+
+            if usando_mapa:
+                if not nombre_mapa or not tipo_mapa:
+                    flash('❌ Todos los campos obligatorios deben completarse.', 'danger')
+                    return redirect(url_for('sugerir'))
+            else:
+                if not nombre or not direccion or not ciudad or not provincia or not pais or not tipo:
+                    flash('❌ Todos los campos obligatorios deben completarse.', 'danger')
+                    return redirect(url_for('sugerir'))
+
+                # 🔍 Geocodificación automática
+                direccion_completa = f"{direccion}, {ciudad}, {provincia}, {pais}"
+                lat, lng = geocodificar_direccion(direccion_completa)
+                if lat is None or lng is None:
+                    flash("⚠️ No se pudo geolocalizar la dirección automáticamente. Por favor completá la ubicación manualmente desde el panel de revisión.", "warning")
+                    return redirect(url_for('ver_mapa'))
+
+
+            nuevo_lugar = LugarSugerido(
+                nombre=nombre_mapa if usando_mapa else nombre,
+                direccion=direccion if not usando_mapa else 'Ubicación seleccionada en mapa',
+                ciudad=ciudad if not usando_mapa else '',
+                provincia=provincia if not usando_mapa else '',
+                pais=pais,
+                tipo=tipo_mapa if usando_mapa else tipo,
+                comentarios=comentarios_mapa if usando_mapa else comentarios,
+                lat=lat,
+                lng=lng
+            )
+
+            db.session.add(nuevo_lugar)
+            db.session.commit()
+
+            return redirect(url_for('ver_mapa', enviado='ok'))
         
-        return redirect(url_for('ver_mapa', enviado='ok'))
+        # Si el método no fue POST, simplemente renderiza el formulario
+        return render_template('formulario.html')
 
-    return render_template('formulario.html')
+
 
 
 @app.route('/lugar/<int:id>/destacar', methods=['POST'])
@@ -582,11 +589,22 @@ def rechazar_lugar(lugar_id):
 def geocodificar_direccion(direccion_completa):
     url = "https://nominatim.openstreetmap.org/search"
     params = {"q": direccion_completa, "format": "json", "limit": 1}
-    headers = {"User-Agent": "MapaSinTACC/1.0 (tucorreo@example.com)"}
-    response = requests.get(url, params=params, headers=headers)
-    data = response.json()
-    if data:
-        return float(data[0]["lat"]), float(data[0]["lon"])
+    headers = {
+    "User-Agent": "GlutyMapApp/1.0 (contacto: glutymap.info@gmail.com)",
+    "Referer": "https://glutymap.com"
+}
+    try:
+        response = requests.get(url, params=params, headers=headers, timeout=10)
+        response.raise_for_status()
+        data = response.json()
+        if data:
+            print(f"[Geocodificación exitosa] {direccion_completa} → {data[0]['lat']}, {data[0]['lon']}")
+            return float(data[0]["lat"]), float(data[0]["lon"])
+        else:
+            print(f"[Geocodificación sin resultados] {direccion_completa}")
+    except Exception as e:
+        print(f"[Error geocodificación] {direccion_completa} → {e}")
+
     return None, None
 
 @app.route('/admin/dashboard')
