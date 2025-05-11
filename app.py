@@ -31,7 +31,12 @@ def admin_required(f):
 
 
 app = Flask(__name__)
-app.secret_key = os.getenv('SECRET_KEY')
+
+clave_secreta = os.getenv('SECRET_KEY')
+if not clave_secreta:
+    raise RuntimeError("SECRET_KEY no encontrada en variables de entorno.")
+app.secret_key = clave_secreta
+
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://neondb_owner:npg_NdKPSa7rQ1et@ep-snowy-thunder-a4gsx6gn-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
