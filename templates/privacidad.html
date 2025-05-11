@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Política de Privacidad{% endblock %}
+{% block content %}
+<h1>Política de Privacidad</h1>
+<p>En GlutyMap valoramos tu privacidad. Esta política explica cómo recopilamos, usamos y protegemos tus datos personales.</p>
+
+<h3>Información que recopilamos</h3>
+<ul>
+  <li>Tu dirección de correo electrónico al registrarte.</li>
+  <li>Dirección IP y navegador (por fines estadísticos y de seguridad).</li>
+  <li>Información enviada voluntariamente a través de formularios.</li>
+</ul>
+
+<h3>Uso de la información</h3>
+<p>Utilizamos tus datos para:</p>
+<ul>
+  <li>Gestionar tu cuenta.</li>
+  <li>Enviarte confirmaciones por email.</li>
+  <li>Mejorar la experiencia en la plataforma.</li>
+</ul>
+
+<h3>Compartición de datos</h3>
+<p>No compartimos tus datos personales con terceros, salvo requerimiento legal o autorización expresa tuya.</p>
+
+<h3>Cookies</h3>
+<p>Usamos cookies para mejorar el funcionamiento del sitio. Más información en nuestra <a href="{{ url_for('politica_cookies') }}">Política de Cookies</a>.</p>
+
+<p>Podés contactarnos a <a href="mailto:glutymap.info@gmail.com">glutymap.info@gmail.com</a> para consultar o eliminar tus datos.</p>
+{% endblock %}

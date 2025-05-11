@@ -951,6 +951,18 @@ def ads_txt():
         mimetype='text/plain'
     )
 
+@app.route("/privacidad")
+def politica_privacidad():
+    return render_template("privacidad.html")
+
+@app.route("/terminos")
+def terminos_condiciones():
+    return render_template("terminos.html")
+
+@app.route("/cookies")
+def politica_cookies():
+    return render_template("cookies.html")
+
 
 
 
