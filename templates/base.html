@@ -35,7 +35,8 @@
       <!-- Contenido colapsable -->
       <div class="collapse navbar-collapse" id="navbarContenido">
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('ver_mapa') }}">🏠 Inicio</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('inicio') }}">🏠Inicio</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('ver_mapa') }}">🗺️ Mapa</a></li>
           <li class="nav-item"><a class="nav-link" href="{{ url_for('sugerir') }}">📝 Sugerir Lugar</a></li>
           <li class="nav-item"><a class="nav-link" href="{{ url_for('recomendados') }}">🌟 Recomendados</a></li>
           {% if current_user.is_authenticated %}

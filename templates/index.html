@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Inicio - GlutyMap{% endblock %}
+{% block content %}
+<div class="container py-5 text-center">
+  <h1 class="display-4">🌾 Bienvenid@ a GlutyMap</h1>
+  <p class="lead">Tu mapa confiable de lugares sin TACC en Argentina 🇦🇷</p>
+
+  <div class="row mt-5">
+    <div class="col-md-4">
+      <img src="/static/img/mapa_intro.gif" class="img-fluid mb-3" alt="Mapa sin gluten">
+      <h4>📍 Mapa interactivo</h4>
+      <p>Explorá lugares sin TACC en todo el país. Filtrá por ciudad, tipo de comercio y puntuación.</p>
+    </div>
+    <div class="col-md-4">
+        <video autoplay muted loop class="img-fluid mb-3" style="border-radius: 8px;">
+            <source src="/static/img/sugerir_lugar.mp4" type="video/mp4">
+            Tu navegador no soporta video HTML5.
+        </video>          
+      <h4>📝 Sugerencias colaborativas</h4>
+      <p>¿Conocés un comercio sin gluten? Sumalo al mapa y ayudá a otras personas celíacas.</p>
+    </div>
+    <div class="col-md-4">
+      <img src="/static/img/comercio_dashboard.gif" class="img-fluid mb-3" alt="Comercio registrado">
+      <h4>📊 Panel de comercios</h4>
+      <p>Los comercios registrados pueden destacar su perfil, ver estadísticas y subir promociones.</p>
+    </div>
+  </div>
+
+  <div class="mt-5">
+    <a href="{{ url_for('ver_mapa') }}" class="btn btn-primary btn-lg me-3">Ver el mapa</a>
+    <a href="{{ url_for('sugerir') }}" class="btn btn-outline-success btn-lg">Sugerir lugar</a>
+  </div>
+</div>
+{% endblock %}

@@ -66,7 +66,11 @@ migrate = Migrate(app, db)
 def load_user(user_id):
     return Usuario.query.get(int(user_id))
 
-@app.route('/')
+@app.route("/")
+def inicio():
+    return render_template("index.html")
+
+@app.route('/mapa')
 def ver_mapa():
     resultados = db.session.query(
         LugarSugerido,
