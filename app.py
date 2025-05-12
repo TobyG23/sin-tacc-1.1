@@ -244,11 +244,14 @@ def quitar_destacado(id):
 
 #Sistema de reviews
 @app.route('/lugar/<int:lugar_id>', methods=['GET', 'POST'])
-@login_required
 def ver_lugar(lugar_id):
     lugar = LugarSugerido.query.get_or_404(lugar_id)
 
     if request.method == 'POST':
+        if not current_user.is_authenticated:
+            flash("Necesitás iniciar sesión para dejar una review.", "warning")
+            return redirect(url_for('login'))
+
         puntuacion = int(request.form.get('puntuacion'))
         comentario = request.form.get('comentario')
 
@@ -266,6 +269,7 @@ def ver_lugar(lugar_id):
 
     reviews = Review.query.filter_by(lugar_id=lugar.id).order_by(Review.fecha.desc()).all()
     return render_template('ver_lugar.html', lugar=lugar, reviews=reviews)
+
 
 
 @app.route('/register', methods=['GET', 'POST'])
