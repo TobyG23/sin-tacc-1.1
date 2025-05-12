@@ -3,6 +3,7 @@ import csv
 import os
 from dotenv import load_dotenv
 load_dotenv()
+from flask import send_from_directory
 from PIL import Image
 from io import StringIO
 from flask import Flask, render_template, request, redirect, url_for, flash, abort, Response
@@ -967,6 +968,13 @@ def terminos_condiciones():
 def politica_cookies():
     return render_template("cookies.html")
 
+@app.route("/sitemap.xml")
+def sitemap():
+    return send_from_directory("static", "sitemap.xml")
+
+@app.route("/robots.txt")
+def robots():
+    return send_from_directory("static", "robots.txt")
 
 
 

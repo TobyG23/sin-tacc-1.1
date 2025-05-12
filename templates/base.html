@@ -2,7 +2,17 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <link rel="icon" href="{{ url_for('static', filename='img/favicon.ico') }}" type="image/x-icon">
     <title>{% block title %}Mapa Sin TACC{% endblock %}</title>
+    <meta name="description" content="GlutyMap es un mapa colaborativo para encontrar comercios, panaderías y restaurantes sin TACC en Argentina. Pensado para personas celíacas.">
+    <meta name="keywords" content="sin TACC, celíacos, gluten free, mapa sin gluten, comercios sin gluten, GlutyMap, Argentina, sugerir comercio, restaurantes sin TACC">
+    <meta name="author" content="Tobías García">
+    <meta property="og:title" content="GlutyMap – Mapa sin TACC">
+    <meta property="og:description" content="Plataforma colaborativa para ubicar y compartir lugares sin gluten en Argentina.">
+    <meta property="og:image" content="{{ url_for('static', filename='img/favicon.ico', _external=True) }}">
+    <meta property="og:url" content="https://glutymap.com/">
+    <meta name="robots" content="index, follow">
+
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/static/css/style.css">
@@ -25,7 +35,7 @@
 <!-- 🔺 Navbar -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-danger" id="main-navbar">
     <div class="container-fluid">
-      <a class="navbar-brand" href="/">🌽 Sin TACC Mapa</a>
+      <a class="navbar-brand" href="/">🌽 GlutyMap - Mapa Gluten Free</a>
   
       <!-- Botón hamburguesa -->
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContenido" aria-controls="navbarContenido" aria-expanded="false" aria-label="Toggle navigation">
