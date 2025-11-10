@@ -3,15 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <link rel="icon" href="{{ url_for('static', filename='img/favicon.ico') }}" type="image/x-icon">
-    <title>{% block title %}Mapa Sin TACC{% endblock %}</title>
-    <meta name="description" content="GlutyMap es un mapa colaborativo para encontrar comercios, panaderías y restaurantes sin TACC en Argentina. Pensado para personas celíacas.">
-    <meta name="keywords" content="sin TACC, celíacos, gluten free, mapa sin gluten, comercios sin gluten, GlutyMap, Argentina, sugerir comercio, restaurantes sin TACC">
+    <title>{% block title %}LocalHub - Plataforma de Comercios Locales{% endblock %}</title>
+    <meta name="description" content="LocalHub es una plataforma colaborativa para descubrir comercios locales, ver sus menús, horarios y contactarlos. Incluye opciones para celíacos, veganos y más.">
+    <meta name="keywords" content="comercios locales, restaurantes, cafeterías, menús, sin gluten, vegano, LocalHub, Argentina, delivery, opciones gastronómicas">
     <meta name="author" content="Tobías García">
-    <meta property="og:title" content="GlutyMap – Mapa sin TACC">
-    <meta property="og:description" content="Plataforma colaborativa para ubicar y compartir lugares sin gluten en Argentina.">
+    <meta property="og:title" content="LocalHub – Descubre Comercios Locales">
+    <meta property="og:description" content="Plataforma colaborativa para descubrir comercios, ver menús, horarios y opciones especiales como sin gluten, vegano y más.">
     <meta property="og:image" content="{{ url_for('static', filename='img/favicon.ico', _external=True) }}">
-    <meta property="og:url" content="https://glutymap.com/">
+    <meta property="og:url" content="https://localhub.com/">
     <meta name="robots" content="index, follow">
+
+    <!-- Font Awesome para iconos profesionales -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -31,38 +34,59 @@
 </head>
 <body>
 
-<!-- 🔺 Navbar -->
-<!-- 🔺 Navbar -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-danger" id="main-navbar">
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark" id="main-navbar" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
     <div class="container-fluid">
-      <a class="navbar-brand" href="/">🌽 GlutyMap - Mapa Gluten Free</a>
-          <div id="google_translate_element"></div>
-  
+      <a class="navbar-brand fw-bold" href="/">
+        <i class="fas fa-map-marked-alt"></i> LocalHub
+      </a>
+      <div id="google_translate_element" class="d-none d-lg-block"></div>
+
       <!-- Botón hamburguesa -->
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContenido" aria-controls="navbarContenido" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
-  
+
       <!-- Contenido colapsable -->
       <div class="collapse navbar-collapse" id="navbarContenido">
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('inicio') }}">🏠Inicio</a></li>
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('ver_mapa') }}">🗺️ Mapa</a></li>
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('sugerir') }}">📝 Sugerir Lugar</a></li>
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('recomendados') }}">🌟 Recomendados</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('inicio') }}"><i class="fas fa-home"></i> Inicio</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('ver_mapa') }}"><i class="fas fa-map"></i> Mapa</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('sugerir') }}"><i class="fas fa-plus-circle"></i> Sugerir Lugar</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('recomendados') }}"><i class="fas fa-star"></i> Destacados</a></li>
           {% if current_user.is_authenticated %}
-            <li class="nav-item"><a class="nav-link" href="{{ url_for('donar') }}">☕ Donar</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('donar') }}"><i class="fas fa-coffee"></i> Donar</a></li>
             {% if current_user.es_comercio %}
-              <li class="nav-item"><a class="nav-link" href="/mi-comercio">🏪 Mi Comercio</a></li>
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownComercio" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="fas fa-store"></i> Mi Comercio
+                </a>
+                <ul class="dropdown-menu" aria-labelledby="navbarDropdownComercio">
+                  <li><a class="dropdown-item" href="{{ url_for('mi_comercio_dashboard') }}"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                  <li><a class="dropdown-item" href="{{ url_for('gestionar_menus') }}"><i class="fas fa-utensils"></i> Menús</a></li>
+                  <li><a class="dropdown-item" href="{{ url_for('gestionar_redes_sociales') }}"><i class="fas fa-share-alt"></i> Redes Sociales</a></li>
+                  <li><a class="dropdown-item" href="{{ url_for('gestionar_fotos') }}"><i class="fas fa-images"></i> Galería</a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><a class="dropdown-item" href="/mi-comercio"><i class="fas fa-cog"></i> Configuración</a></li>
+                </ul>
+              </li>
             {% endif %}
             {% if current_user.is_admin %}
-              <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard') }}">🛠️ Admin</a></li>
+              <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard') }}"><i class="fas fa-tools"></i> Admin</a></li>
             {% endif %}
-            <li class="nav-item"><a class="nav-link disabled" href="#">👤 {{ current_user.email }}</a></li>
-            <li class="nav-item"><a class="btn btn-outline-light btn-sm ms-2" href="{{ url_for('logout') }}">Cerrar sesión</a></li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownUser" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-user-circle"></i> {{ current_user.email.split('@')[0] }}
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdownUser">
+                <li><a class="dropdown-item disabled" href="#"><small>{{ current_user.email }}</small></a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a></li>
+              </ul>
+            </li>
           {% else %}
-            <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}">🔐 Iniciar sesión</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ url_for('register') }}">🆕 Registrarse</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}"><i class="fas fa-sign-in-alt"></i> Iniciar sesión</a></li>
+            <li class="nav-item"><a class="btn btn-outline-light btn-sm ms-2" href="{{ url_for('register') }}">Registrarse</a></li>
           {% endif %}
         </ul>
       </div>
@@ -106,14 +130,14 @@
     {% block content %}{% endblock %}
 </div>
 
-<!-- 🔻 Footer -->
+<!-- Footer -->
 <footer class="text-center mt-5 mb-3 text-muted">
-  <p>© 2025 Mapa Sin TACC - Hecho con ❤️ para la comunidad celíaca.</p>
-  <p>© 2025 GlutyMap – All rights reserved. Registered by Tobías García.</p>
+  <p>© 2025 LocalHub - Conectando comunidades con comercios locales</p>
+  <p class="small">Desarrollado con <i class="fas fa-heart text-danger"></i> por Tobías García</p>
   <div class="mt-2">
-      <a href="{{ url_for('politica_privacidad') }}" class="text-decoration-none text-muted mx-2">Política de Privacidad</a> |
-      <a href="{{ url_for('terminos_condiciones') }}" class="text-decoration-none text-muted mx-2">Términos y Condiciones</a> |
-      <a href="{{ url_for('politica_cookies') }}" class="text-decoration-none text-muted mx-2">Política de Cookies</a>
+      <a href="{{ url_for('politica_privacidad') }}" class="text-decoration-none text-muted mx-2"><i class="fas fa-shield-alt"></i> Privacidad</a> |
+      <a href="{{ url_for('terminos_condiciones') }}" class="text-decoration-none text-muted mx-2"><i class="fas fa-file-contract"></i> Términos</a> |
+      <a href="{{ url_for('politica_cookies') }}" class="text-decoration-none text-muted mx-2"><i class="fas fa-cookie-bite"></i> Cookies</a>
   </div>
 </footer>
 

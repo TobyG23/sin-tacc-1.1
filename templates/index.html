@@ -1,31 +1,237 @@
 {% extends "base.html" %}
-{% block title %}Inicio - GlutyMap{% endblock %}
+{% block title %}Inicio - LocalHub{% endblock %}
 {% block content %}
-<div class="container py-5 text-center">
-  <h1 class="display-4">🌾 Bienvenid@ a GlutyMap</h1>
-  <p class="lead">Tu mapa confiable de lugares sin TACC en Argentina 🇦🇷</p>
 
-  <div class="row mt-5 gx-4 gy-4">
-    <div class="col-12 col-md-4">
-      <img src="/static/img/mapa_intro.gif" class="img-fluid mb-3 rounded" alt="Mapa sin gluten">
-      <h4>📍 Mapa interactivo</h4>
-      <p>Explorá lugares sin TACC en todo el país. Filtrá por ciudad, tipo de comercio y puntuación.</p>
-    </div>
-    <div class="col-12 col-md-4">
-      <img src="/static/img/sugerir_lugar.gif" class="img-fluid mb-3 rounded" alt="Sugerir lugar">
-      <h4>📝 Sugerencias colaborativas</h4>
-      <p>¿Conocés un comercio sin gluten? Sumalo al mapa y ayudá a otras personas celíacas.</p>
-    </div>
-    <div class="col-12 col-md-4">
-      <img src="/static/img/comercio_dashboard.gif" class="img-fluid mb-3 rounded" alt="Comercio registrado">
-      <h4>📊 Panel de comercios</h4>
-      <p>Los comercios registrados pueden destacar su perfil, ver estadísticas y subir promociones.</p>
-    </div>
-  </div>
+<!-- Hero Section -->
+<div class="hero-section text-center py-5" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 15px; margin-bottom: 3rem;">
+  <div class="container">
+    <h1 class="display-3 fw-bold mb-3"><i class="fas fa-map-marked-alt"></i> LocalHub</h1>
+    <p class="lead fs-4">Descubre comercios locales, explora menús y conecta con tu comunidad</p>
+    <p class="mb-4">La plataforma colaborativa para encontrar restaurantes, cafeterías y más, con opciones para todos</p>
 
-  <div class="mt-5 d-flex flex-column flex-md-row justify-content-center gap-3">
-    <a href="{{ url_for('ver_mapa') }}" class="btn btn-primary btn-lg">Ver el mapa</a>
-    <a href="{{ url_for('sugerir') }}" class="btn btn-outline-success btn-lg">Sugerir lugar</a>
+    <div class="mt-4 d-flex flex-column flex-md-row justify-content-center gap-3">
+      <a href="{{ url_for('ver_mapa') }}" class="btn btn-light btn-lg px-5 shadow">
+        <i class="fas fa-map"></i> Explorar Mapa
+      </a>
+      <a href="{{ url_for('sugerir') }}" class="btn btn-outline-light btn-lg px-5">
+        <i class="fas fa-plus-circle"></i> Agregar Comercio
+      </a>
+    </div>
   </div>
 </div>
+
+<!-- Features Section -->
+<div class="container">
+  <div class="row mb-5">
+    <div class="col-12 text-center mb-4">
+      <h2 class="fw-bold">¿Qué es LocalHub?</h2>
+      <p class="text-muted">Una plataforma completa para descubrir y gestionar comercios locales</p>
+    </div>
+  </div>
+
+  <div class="row g-4 mb-5">
+    <!-- Feature 1 -->
+    <div class="col-12 col-md-6 col-lg-3">
+      <div class="card h-100 border-0 shadow-sm">
+        <div class="card-body text-center p-4">
+          <div class="feature-icon mb-3" style="font-size: 3rem; color: #667eea;">
+            <i class="fas fa-map-marked-alt"></i>
+          </div>
+          <h5 class="card-title fw-bold">Mapa Interactivo</h5>
+          <p class="card-text text-muted">Explora comercios en tu zona con nuestro mapa dinámico. Filtra por categorías y encuentra exactamente lo que buscas.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feature 2 -->
+    <div class="col-12 col-md-6 col-lg-3">
+      <div class="card h-100 border-0 shadow-sm">
+        <div class="card-body text-center p-4">
+          <div class="feature-icon mb-3" style="font-size: 3rem; color: #764ba2;">
+            <i class="fas fa-utensils"></i>
+          </div>
+          <h5 class="card-title fw-bold">Menús Digitales</h5>
+          <p class="card-text text-muted">Consulta menús, precios y opciones especiales antes de visitar. Todo en un solo lugar.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feature 3 -->
+    <div class="col-12 col-md-6 col-lg-3">
+      <div class="card h-100 border-0 shadow-sm">
+        <div class="card-body text-center p-4">
+          <div class="feature-icon mb-3" style="font-size: 3rem; color: #f39c12;">
+            <i class="fas fa-tags"></i>
+          </div>
+          <h5 class="card-title fw-bold">Opciones Especiales</h5>
+          <p class="card-text text-muted">Encuentra opciones sin gluten, veganas, vegetarianas, kosher y más. Filtra según tus necesidades.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feature 4 -->
+    <div class="col-12 col-md-6 col-lg-3">
+      <div class="card h-100 border-0 shadow-sm">
+        <div class="card-body text-center p-4">
+          <div class="feature-icon mb-3" style="font-size: 3rem; color: #e74c3c;">
+            <i class="fas fa-star"></i>
+          </div>
+          <h5 class="card-title fw-bold">Reseñas y Calificaciones</h5>
+          <p class="card-text text-muted">Lee opiniones de otros usuarios y comparte tu experiencia. Ayuda a la comunidad a decidir.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Para Comercios Section -->
+  <div class="row mb-5">
+    <div class="col-12">
+      <div class="card border-0 shadow" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
+        <div class="card-body p-5">
+          <div class="row align-items-center">
+            <div class="col-lg-8">
+              <h3 class="fw-bold mb-3"><i class="fas fa-store"></i> ¿Tienes un Comercio?</h3>
+              <p class="fs-5 mb-3">Únete a LocalHub y gestiona tu negocio de forma profesional:</p>
+              <ul class="list-unstyled">
+                <li class="mb-2"><i class="fas fa-check-circle"></i> <strong>Menús digitales</strong> - Sube tus cartas y actualízalas en tiempo real</li>
+                <li class="mb-2"><i class="fas fa-check-circle"></i> <strong>Códigos QR</strong> - Genera QR para tus redes sociales y menús</li>
+                <li class="mb-2"><i class="fas fa-check-circle"></i> <strong>Galería de fotos</strong> - Muestra tu local, productos y ambiente</li>
+                <li class="mb-2"><i class="fas fa-check-circle"></i> <strong>Estadísticas</strong> - Ve cuántas personas visitan tu perfil</li>
+                <li class="mb-2"><i class="fas fa-check-circle"></i> <strong>Destacado</strong> - Aparece primero en las búsquedas</li>
+              </ul>
+              <a href="{{ url_for('register') }}" class="btn btn-light btn-lg mt-3">
+                <i class="fas fa-rocket"></i> Registrar Mi Comercio
+              </a>
+            </div>
+            <div class="col-lg-4 text-center d-none d-lg-block">
+              <i class="fas fa-chart-line" style="font-size: 10rem; opacity: 0.3;"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Categorías Section -->
+  <div class="row mb-5">
+    <div class="col-12 text-center mb-4">
+      <h2 class="fw-bold">Categorías Destacadas</h2>
+      <p class="text-muted">Encuentra exactamente lo que buscas</p>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-5 text-center">
+    <div class="col-6 col-md-4 col-lg-2">
+      <div class="category-badge p-3 rounded shadow-sm" style="background: #ffe5e5; cursor: pointer;">
+        <i class="fas fa-utensils fa-2x mb-2" style="color: #e74c3c;"></i>
+        <p class="mb-0 fw-bold small">Restaurantes</p>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+      <div class="category-badge p-3 rounded shadow-sm" style="background: #f3e5ff; cursor: pointer;">
+        <i class="fas fa-mug-hot fa-2x mb-2" style="color: #8e44ad;"></i>
+        <p class="mb-0 fw-bold small">Cafeterías</p>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+      <div class="category-badge p-3 rounded shadow-sm" style="background: #fff3e0; cursor: pointer;">
+        <i class="fas fa-bread-slice fa-2x mb-2" style="color: #d68910;"></i>
+        <p class="mb-0 fw-bold small">Panaderías</p>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+      <div class="category-badge p-3 rounded shadow-sm" style="background: #e8f5e9; cursor: pointer;">
+        <i class="fas fa-pizza-slice fa-2x mb-2" style="color: #c0392b;"></i>
+        <p class="mb-0 fw-bold small">Pizzerías</p>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+      <div class="category-badge p-3 rounded shadow-sm" style="background: #e1f5fe; cursor: pointer;">
+        <i class="fas fa-ice-cream fa-2x mb-2" style="color: #3498db;"></i>
+        <p class="mb-0 fw-bold small">Heladerías</p>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+      <div class="category-badge p-3 rounded shadow-sm" style="background: #e8f8f5; cursor: pointer;">
+        <i class="fas fa-wine-glass fa-2x mb-2" style="color: #16a085;"></i>
+        <p class="mb-0 fw-bold small">Bares</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Etiquetas Especiales -->
+  <div class="row mb-5">
+    <div class="col-12 text-center mb-4">
+      <h2 class="fw-bold">Opciones para Todos</h2>
+      <p class="text-muted">Encuentra lugares que se adapten a tus necesidades</p>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-5">
+    <div class="col-6 col-md-4 col-lg-3">
+      <div class="badge-tag p-3 rounded text-center shadow-sm border">
+        <i class="fas fa-leaf text-success fa-2x mb-2"></i>
+        <p class="mb-0 fw-bold">Sin Gluten / Celíacos</p>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-3">
+      <div class="badge-tag p-3 rounded text-center shadow-sm border">
+        <i class="fas fa-seedling text-success fa-2x mb-2"></i>
+        <p class="mb-0 fw-bold">Vegano</p>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-3">
+      <div class="badge-tag p-3 rounded text-center shadow-sm border">
+        <i class="fas fa-carrot text-warning fa-2x mb-2"></i>
+        <p class="mb-0 fw-bold">Vegetariano</p>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-3">
+      <div class="badge-tag p-3 rounded text-center shadow-sm border">
+        <i class="fas fa-paw text-primary fa-2x mb-2"></i>
+        <p class="mb-0 fw-bold">Pet Friendly</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA Final -->
+  <div class="row mb-5">
+    <div class="col-12 text-center">
+      <div class="p-5 rounded" style="background: #f8f9fa;">
+        <h3 class="fw-bold mb-3">¿Listo para Descubrir?</h3>
+        <p class="lead text-muted mb-4">Únete a nuestra comunidad y empieza a explorar comercios locales</p>
+        <div class="d-flex flex-column flex-md-row justify-content-center gap-3">
+          <a href="{{ url_for('ver_mapa') }}" class="btn btn-primary btn-lg px-5">
+            <i class="fas fa-map"></i> Ver Mapa
+          </a>
+          <a href="{{ url_for('register') }}" class="btn btn-outline-primary btn-lg px-5">
+            <i class="fas fa-user-plus"></i> Crear Cuenta
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.hero-section {
+  animation: fadeIn 1s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  transition: all 0.3s ease;
+}
+
+.category-badge:hover, .badge-tag:hover {
+  transform: scale(1.05);
+  transition: all 0.3s ease;
+}
+</style>
+
 {% endblock %}

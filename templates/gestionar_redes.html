@@ -1,0 +1,296 @@
+{% extends "base.html" %}
+{% block title %}Redes Sociales y QR - {{ lugar.nombre }}{% endblock %}
+{% block content %}
+
+<div class="container-fluid">
+  <!-- Breadcrumb -->
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{{ url_for('mi_comercio_dashboard') }}">Dashboard</a></li>
+      <li class="breadcrumb-item active">Redes Sociales y QR</li>
+    </ol>
+  </nav>
+
+  <!-- Header -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <h1 class="fw-bold"><i class="fas fa-share-alt text-primary"></i> Redes Sociales y Códigos QR</h1>
+      <p class="text-muted">Conecta tus redes sociales y genera códigos QR automáticamente</p>
+    </div>
+  </div>
+
+  <!-- Formulario para Agregar Red Social -->
+  <div class="row mb-4">
+    <div class="col-lg-6">
+      <div class="card shadow-sm">
+        <div class="card-body p-4">
+          <h5 class="fw-bold mb-3"><i class="fas fa-plus-circle text-success"></i> Agregar Red Social</h5>
+          <form method="POST" action="{{ url_for('gestionar_redes_sociales') }}">
+            <div class="mb-3">
+              <label for="tipo" class="form-label fw-bold">Tipo de Red Social *</label>
+              <select class="form-select" id="tipo" name="tipo" required>
+                <option value="">Selecciona una opción...</option>
+                <option value="facebook"><i class="fab fa-facebook"></i> Facebook</option>
+                <option value="instagram">Instagram</option>
+                <option value="twitter">Twitter / X</option>
+                <option value="whatsapp">WhatsApp</option>
+                <option value="tiktok">TikTok</option>
+                <option value="youtube">YouTube</option>
+                <option value="linkedin">LinkedIn</option>
+                <option value="website">Sitio Web</option>
+                <option value="email">Email</option>
+                <option value="menu">Menú Digital</option>
+                <option value="otro">Otro</option>
+              </select>
+              <div class="form-text">Se generará un código QR automáticamente</div>
+            </div>
+
+            <div class="mb-3">
+              <label for="url_perfil" class="form-label fw-bold">URL o Contacto *</label>
+              <input type="text" class="form-control" id="url_perfil" name="url_perfil" required
+                     placeholder="https://instagram.com/tunegocio o +5491123456789">
+              <div class="form-text">
+                Para WhatsApp: +5491123456789 | Para Email: tunegocio@ejemplo.com | Para redes: URL completa
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">
+              <i class="fas fa-qrcode"></i> Agregar y Generar QR
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Preview de Iconos -->
+    <div class="col-lg-6">
+      <div class="card shadow-sm bg-light">
+        <div class="card-body p-4">
+          <h5 class="fw-bold mb-3"><i class="fas fa-icons text-info"></i> Redes Disponibles</h5>
+          <p class="text-muted small mb-3">Al agregar una red social, se generará automáticamente un código QR que podrás descargar e imprimir</p>
+
+          <div class="row g-3 text-center">
+            <div class="col-4 col-md-3">
+              <div class="p-2 rounded">
+                <i class="fab fa-facebook fa-3x text-primary"></i>
+                <p class="small mb-0 mt-1">Facebook</p>
+              </div>
+            </div>
+            <div class="col-4 col-md-3">
+              <div class="p-2 rounded">
+                <i class="fab fa-instagram fa-3x" style="color: #E1306C;"></i>
+                <p class="small mb-0 mt-1">Instagram</p>
+              </div>
+            </div>
+            <div class="col-4 col-md-3">
+              <div class="p-2 rounded">
+                <i class="fab fa-whatsapp fa-3x text-success"></i>
+                <p class="small mb-0 mt-1">WhatsApp</p>
+              </div>
+            </div>
+            <div class="col-4 col-md-3">
+              <div class="p-2 rounded">
+                <i class="fab fa-tiktok fa-3x" style="color: #000;"></i>
+                <p class="small mb-0 mt-1">TikTok</p>
+              </div>
+            </div>
+            <div class="col-4 col-md-3">
+              <div class="p-2 rounded">
+                <i class="fab fa-youtube fa-3x text-danger"></i>
+                <p class="small mb-0 mt-1">YouTube</p>
+              </div>
+            </div>
+            <div class="col-4 col-md-3">
+              <div class="p-2 rounded">
+                <i class="fab fa-twitter fa-3x text-info"></i>
+                <p class="small mb-0 mt-1">Twitter/X</p>
+              </div>
+            </div>
+            <div class="col-4 col-md-3">
+              <div class="p-2 rounded">
+                <i class="fas fa-globe fa-3x text-primary"></i>
+                <p class="small mb-0 mt-1">Sitio Web</p>
+              </div>
+            </div>
+            <div class="col-4 col-md-3">
+              <div class="p-2 rounded">
+                <i class="fas fa-utensils fa-3x text-success"></i>
+                <p class="small mb-0 mt-1">Menú</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QR Tarjeta de Negocio -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card shadow-sm border-primary">
+        <div class="card-body p-4">
+          <div class="row align-items-center">
+            <div class="col-md-8">
+              <h5 class="fw-bold mb-2"><i class="fas fa-id-card text-primary"></i> QR Tarjeta de Negocio</h5>
+              <p class="text-muted mb-3">Genera un código QR con toda la información de tu comercio (dirección, teléfono, redes sociales, etc.)</p>
+              <a href="{{ url_for('generar_qr_tarjeta') }}" class="btn btn-primary">
+                <i class="fas fa-qrcode"></i> Generar y Descargar
+              </a>
+            </div>
+            <div class="col-md-4 text-center">
+              <i class="fas fa-qrcode fa-5x text-primary opacity-25"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lista de Redes Sociales -->
+  <div class="row">
+    <div class="col-12">
+      <h4 class="fw-bold mb-3"><i class="fas fa-list text-secondary"></i> Tus Redes Sociales</h4>
+    </div>
+  </div>
+
+  {% if redes|length > 0 %}
+  <div class="row g-3 mb-4">
+    {% for red in redes %}
+    <div class="col-md-6 col-lg-4">
+      <div class="card shadow-sm h-100 {% if not red.activo %}opacity-50{% endif %}">
+        <div class="card-body p-4">
+          <!-- Header con Icono -->
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div>
+              <h5 class="fw-bold mb-0">
+                {% if red.tipo == 'facebook' %}
+                <i class="fab fa-facebook text-primary"></i> Facebook
+                {% elif red.tipo == 'instagram' %}
+                <i class="fab fa-instagram" style="color: #E1306C;"></i> Instagram
+                {% elif red.tipo == 'twitter' %}
+                <i class="fab fa-twitter text-info"></i> Twitter/X
+                {% elif red.tipo == 'whatsapp' %}
+                <i class="fab fa-whatsapp text-success"></i> WhatsApp
+                {% elif red.tipo == 'tiktok' %}
+                <i class="fab fa-tiktok"></i> TikTok
+                {% elif red.tipo == 'youtube' %}
+                <i class="fab fa-youtube text-danger"></i> YouTube
+                {% elif red.tipo == 'linkedin' %}
+                <i class="fab fa-linkedin text-primary"></i> LinkedIn
+                {% elif red.tipo == 'website' %}
+                <i class="fas fa-globe text-primary"></i> Sitio Web
+                {% elif red.tipo == 'email' %}
+                <i class="fas fa-envelope text-secondary"></i> Email
+                {% elif red.tipo == 'menu' %}
+                <i class="fas fa-utensils text-success"></i> Menú
+                {% else %}
+                <i class="fas fa-link text-secondary"></i> {{ red.tipo|title }}
+                {% endif %}
+              </h5>
+              <p class="text-muted small mb-0">{{ red.clics }} clic{% if red.clics != 1 %}s{% endif %}</p>
+            </div>
+            {% if red.activo %}
+            <span class="badge bg-success">Activo</span>
+            {% else %}
+            <span class="badge bg-secondary">Inactivo</span>
+            {% endif %}
+          </div>
+
+          <!-- URL -->
+          <div class="mb-3">
+            <div class="input-group input-group-sm">
+              <input type="text" class="form-control" value="{{ red.url_perfil }}" readonly id="url-{{ red.id }}">
+              <button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard('url-{{ red.id }}')">
+                <i class="fas fa-copy"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Código QR -->
+          {% if red.qr_code_url %}
+          <div class="text-center mb-3">
+            <img src="/static/{{ red.qr_code_url }}" alt="QR {{ red.tipo }}" class="img-fluid rounded shadow-sm" style="max-width: 150px;">
+          </div>
+          {% endif %}
+
+          <!-- Acciones -->
+          <div class="d-grid gap-2">
+            <a href="{{ red.url_perfil }}" target="_blank" class="btn btn-sm btn-outline-primary">
+              <i class="fas fa-external-link-alt"></i> Abrir
+            </a>
+
+            {% if red.qr_code_url %}
+            <a href="/static/{{ red.qr_code_url }}" download="QR_{{ red.tipo }}_{{ lugar.nombre }}.png" class="btn btn-sm btn-outline-success">
+              <i class="fas fa-download"></i> Descargar QR
+            </a>
+            {% endif %}
+
+            <form method="POST" action="{{ url_for('eliminar_red_social', red_id=red.id) }}" onsubmit="return confirm('¿Eliminar esta red social?');">
+              <button type="submit" class="btn btn-sm btn-outline-danger w-100">
+                <i class="fas fa-trash"></i> Eliminar
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <!-- Estado vacío -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card shadow-sm text-center p-5">
+        <div class="card-body">
+          <i class="fas fa-share-alt fa-5x text-muted mb-4"></i>
+          <h3 class="fw-bold mb-3">Aún no has agregado redes sociales</h3>
+          <p class="text-muted mb-4">Conecta tus redes sociales para que tus clientes puedan seguirte y contactarte fácilmente. Se generarán códigos QR automáticamente.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Ayuda -->
+  <div class="row mt-5">
+    <div class="col-12">
+      <div class="card border-info">
+        <div class="card-body">
+          <h5 class="fw-bold text-info mb-3"><i class="fas fa-question-circle"></i> ¿Cómo usar los códigos QR?</h5>
+          <div class="row">
+            <div class="col-md-4">
+              <h6 class="fw-bold"><i class="fas fa-print text-primary"></i> Imprime</h6>
+              <p class="small text-muted">Descarga e imprime los QR para colocarlos en tu local, menús físicos o publicidad</p>
+            </div>
+            <div class="col-md-4">
+              <h6 class="fw-bold"><i class="fas fa-mobile-alt text-success"></i> Escanea</h6>
+              <p class="small text-muted">Tus clientes pueden escanear con la cámara de su celular y acceder directamente</p>
+            </div>
+            <div class="col-md-4">
+              <h6 class="fw-bold"><i class="fas fa-chart-line text-info"></i> Monitorea</h6>
+              <p class="small text-muted">Ve cuántas personas hacen clic en cada red social desde tu perfil</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function copyToClipboard(elementId) {
+  const input = document.getElementById(elementId);
+  input.select();
+  document.execCommand('copy');
+
+  // Mostrar feedback
+  const btn = input.nextElementSibling;
+  const originalHTML = btn.innerHTML;
+  btn.innerHTML = '<i class="fas fa-check"></i>';
+  setTimeout(() => {
+    btn.innerHTML = originalHTML;
+  }, 2000);
+}
+</script>
+
+{% endblock %}

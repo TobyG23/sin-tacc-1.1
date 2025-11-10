@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+{% block title %}Gestionar Menús - {{ lugar.nombre }}{% endblock %}
+{% block content %}
+
+<div class="container-fluid">
+  <!-- Breadcrumb -->
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{{ url_for('mi_comercio_dashboard') }}">Dashboard</a></li>
+      <li class="breadcrumb-item active">Gestionar Menús</li>
+    </ol>
+  </nav>
+
+  <!-- Header -->
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <h1 class="fw-bold"><i class="fas fa-utensils text-success"></i> Gestionar Menús</h1>
+      <p class="text-muted">Sube tus cartas en PDF o crea menús con items individuales</p>
+    </div>
+    <div class="col-md-4 text-end">
+      <a href="{{ url_for('crear_menu') }}" class="btn btn-primary btn-lg">
+        <i class="fas fa-plus-circle"></i> Crear Nuevo Menú
+      </a>
+    </div>
+  </div>
+
+  <!-- Información del Comercio -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i> <strong>{{ lugar.nombre }}</strong> - Estás gestionando los menús de este comercio
+      </div>
+    </div>
+  </div>
+
+  {% if menus|length > 0 %}
+  <!-- Lista de Menús -->
+  <div class="row g-3">
+    {% for menu in menus %}
+    <div class="col-md-6 col-lg-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <!-- Estado -->
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <h5 class="fw-bold mb-0">
+              <i class="fas fa-book text-primary"></i> {{ menu.nombre }}
+            </h5>
+            {% if menu.activo %}
+            <span class="badge bg-success">Activo</span>
+            {% else %}
+            <span class="badge bg-secondary">Inactivo</span>
+            {% endif %}
+          </div>
+
+          <!-- Descripción -->
+          {% if menu.descripcion %}
+          <p class="text-muted small mb-3">{{ menu.descripcion[:100] }}{% if menu.descripcion|length > 100 %}...{% endif %}</p>
+          {% else %}
+          <p class="text-muted small fst-italic mb-3">Sin descripción</p>
+          {% endif %}
+
+          <!-- Info -->
+          <div class="mb-3">
+            {% if menu.archivo_url %}
+            <div class="mb-2">
+              <i class="fas fa-file-pdf text-danger"></i>
+              <span class="small">Menú en PDF/Imagen</span>
+            </div>
+            {% endif %}
+
+            <div class="mb-2">
+              <i class="fas fa-list text-info"></i>
+              <span class="small">{{ menu.items.count() }} item{% if menu.items.count() != 1 %}s{% endif %}</span>
+            </div>
+
+            <div class="mb-2">
+              <i class="fas fa-calendar text-muted"></i>
+              <span class="small">Actualizado: {{ menu.fecha_actualizacion.strftime('%d/%m/%Y') }}</span>
+            </div>
+          </div>
+
+          <!-- Acciones -->
+          <div class="d-grid gap-2">
+            <a href="{{ url_for('gestionar_items_menu', menu_id=menu.id) }}" class="btn btn-sm btn-outline-primary">
+              <i class="fas fa-th-list"></i> Gestionar Items ({{ menu.items.count() }})
+            </a>
+
+            {% if menu.archivo_url %}
+            <a href="/static/{{ menu.archivo_url }}" target="_blank" class="btn btn-sm btn-outline-secondary">
+              <i class="fas fa-eye"></i> Ver Archivo
+            </a>
+            {% endif %}
+
+            <div class="btn-group" role="group">
+              <a href="{{ url_for('editar_menu', menu_id=menu.id) }}" class="btn btn-sm btn-outline-info">
+                <i class="fas fa-edit"></i> Editar
+              </a>
+              <button type="button" class="btn btn-sm btn-outline-danger" onclick="confirmarEliminacion({{ menu.id }}, '{{ menu.nombre }}')">
+                <i class="fas fa-trash"></i> Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <!-- Estado vacío -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card shadow-sm border-0 text-center p-5">
+        <div class="card-body">
+          <i class="fas fa-utensils fa-5x text-muted mb-4"></i>
+          <h3 class="fw-bold mb-3">Aún no tienes menús</h3>
+          <p class="text-muted mb-4">Comienza subiendo tu primer menú para que tus clientes puedan ver tus productos y precios</p>
+          <a href="{{ url_for('crear_menu') }}" class="btn btn-primary btn-lg">
+            <i class="fas fa-plus-circle"></i> Crear Mi Primer Menú
+          </a>
+
+          <div class="row mt-5 g-3">
+            <div class="col-md-6">
+              <div class="card bg-light h-100">
+                <div class="card-body text-start">
+                  <h5 class="fw-bold mb-3"><i class="fas fa-file-pdf text-danger"></i> Opción 1: Subir PDF/Imagen</h5>
+                  <ul class="text-muted small">
+                    <li>Sube tu carta existente en PDF o imagen</li>
+                    <li>Formato: PDF, JPG, PNG (máx 5MB)</li>
+                    <li>Perfecto si ya tienes tu menú diseñado</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="card bg-light h-100">
+                <div class="card-body text-start">
+                  <h5 class="fw-bold mb-3"><i class="fas fa-list text-success"></i> Opción 2: Crear Items</h5>
+                  <ul class="text-muted small">
+                    <li>Crea items uno por uno con precios</li>
+                    <li>Organiza por categorías (Entradas, Principales, etc.)</li>
+                    <li>Los clientes pueden buscar en tu menú</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Ayuda -->
+  <div class="row mt-5">
+    <div class="col-12">
+      <div class="card border-primary">
+        <div class="card-body">
+          <h5 class="fw-bold text-primary mb-3"><i class="fas fa-question-circle"></i> Ayuda y Consejos</h5>
+          <div class="row">
+            <div class="col-md-6">
+              <h6 class="fw-bold">¿Cómo funcionan los menús?</h6>
+              <p class="small text-muted">Puedes tener múltiples menús (Menú del día, Carta de vinos, Menú infantil, etc.). Cada menú puede tener un archivo PDF/imagen O items individuales con precios.</p>
+            </div>
+            <div class="col-md-6">
+              <h6 class="fw-bold">Recomendaciones</h6>
+              <ul class="small text-muted">
+                <li>Usa nombres descriptivos para tus menús</li>
+                <li>Mantén los precios actualizados</li>
+                <li>Agrega fotos a los items cuando sea posible</li>
+                <li>Marca items como "Sin Gluten", "Vegano", etc.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de confirmación de eliminación -->
+<div class="modal fade" id="modalEliminar" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title"><i class="fas fa-exclamation-triangle"></i> Confirmar Eliminación</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p>¿Estás seguro que deseas eliminar el menú <strong id="nombreMenu"></strong>?</p>
+        <p class="text-danger small mb-0">
+          <i class="fas fa-info-circle"></i> Esta acción eliminará también todos los items asociados y no se puede deshacer.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <form id="formEliminar" method="POST" style="display: inline;">
+          <button type="submit" class="btn btn-danger">
+            <i class="fas fa-trash"></i> Eliminar
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function confirmarEliminacion(menuId, menuNombre) {
+  document.getElementById('nombreMenu').textContent = menuNombre;
+  document.getElementById('formEliminar').action = `/mi-comercio/menus/${menuId}/eliminar`;
+
+  const modal = new bootstrap.Modal(document.getElementById('modalEliminar'));
+  modal.show();
+}
+</script>
+
+{% endblock %}
