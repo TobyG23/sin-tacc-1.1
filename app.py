@@ -13,7 +13,8 @@ from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from markupsafe import escape
-from models import db, LugarSugerido, Usuario, Review
+from models import db, LugarSugerido, Usuario, Review, Menu, ItemMenu, Categoria, EtiquetaEspecial, RedSocial, FotoLugar, BannerPublicidad, LogAccion
+import utils
 from datetime import datetime
 from sqlalchemy import func
 from functools import wraps
@@ -980,6 +981,434 @@ def sitemap():
 def robots():
     return send_from_directory("static", "robots.txt")
 
+
+# ============================================================================
+# NUEVAS RUTAS PARA LOCALHUB - SISTEMA DE MENÚS Y CRM MEJORADO
+# ============================================================================
+
+# ------------ RUTAS PARA GESTIÓN DE MENÚS ------------
+
+@app.route('/mi-comercio/menus')
+@login_required
+def gestionar_menus():
+    """Dashboard de gestión de menús del comercio"""
+    if not current_user.es_comercio:
+        flash('Debes tener una cuenta de comercio para acceder', 'error')
+        return redirect(url_for('ver_mapa'))
+
+    # Obtener el lugar asociado
+    lugar = current_user.lugar_asociado
+    if not lugar or not lugar[0].aprobado:
+        flash('Tu comercio aún no ha sido aprobado', 'warning')
+        return redirect(url_for('mi_comercio'))
+
+    menus = Menu.query.filter_by(lugar_id=lugar[0].id).order_by(Menu.orden).all()
+    return render_template('gestionar_menus.html', lugar=lugar[0], menus=menus)
+
+
+@app.route('/mi-comercio/menus/crear', methods=['GET', 'POST'])
+@login_required
+def crear_menu():
+    """Crear un nuevo menú"""
+    if not current_user.es_comercio:
+        abort(403)
+
+    lugar = current_user.lugar_asociado
+    if not lugar or not lugar[0].aprobado:
+        abort(403)
+
+    if request.method == 'POST':
+        nombre = request.form.get('nombre')
+        descripcion = request.form.get('descripcion', '')
+        archivo = request.files.get('archivo')
+
+        if not nombre:
+            flash('El nombre del menú es obligatorio', 'error')
+            return redirect(url_for('crear_menu'))
+
+        # Crear menú
+        menu = Menu(
+            lugar_id=lugar[0].id,
+            nombre=nombre,
+            descripcion=descripcion,
+            orden=Menu.query.filter_by(lugar_id=lugar[0].id).count()
+        )
+
+        # Subir archivo si existe
+        if archivo and archivo.filename:
+            try:
+                archivo_url = utils.save_uploaded_file(archivo, 'menus', f'menu_{lugar[0].id}')
+                menu.archivo_url = archivo_url
+            except ValueError as e:
+                flash(str(e), 'error')
+                return redirect(url_for('crear_menu'))
+
+        db.session.add(menu)
+        db.session.commit()
+
+        flash('Menú creado exitosamente', 'success')
+        return redirect(url_for('gestionar_menus'))
+
+    return render_template('crear_menu.html', lugar=lugar[0])
+
+
+@app.route('/mi-comercio/menus/<int:menu_id>/editar', methods=['GET', 'POST'])
+@login_required
+def editar_menu(menu_id):
+    """Editar un menú existente"""
+    menu = Menu.query.get_or_404(menu_id)
+
+    # Verificar que el menú pertenece al comercio del usuario
+    lugar = current_user.lugar_asociado
+    if not lugar or menu.lugar_id != lugar[0].id:
+        abort(403)
+
+    if request.method == 'POST':
+        menu.nombre = request.form.get('nombre', menu.nombre)
+        menu.descripcion = request.form.get('descripcion', '')
+        menu.activo = request.form.get('activo') == 'on'
+
+        # Actualizar archivo si se sube uno nuevo
+        archivo = request.files.get('archivo')
+        if archivo and archivo.filename:
+            try:
+                archivo_url = utils.save_uploaded_file(archivo, 'menus', f'menu_{lugar[0].id}')
+                menu.archivo_url = archivo_url
+            except ValueError as e:
+                flash(str(e), 'error')
+                return redirect(url_for('editar_menu', menu_id=menu_id))
+
+        menu.fecha_actualizacion = datetime.utcnow()
+        db.session.commit()
+
+        flash('Menú actualizado exitosamente', 'success')
+        return redirect(url_for('gestionar_menus'))
+
+    return render_template('editar_menu.html', menu=menu, lugar=lugar[0])
+
+
+@app.route('/mi-comercio/menus/<int:menu_id>/eliminar', methods=['POST'])
+@login_required
+def eliminar_menu(menu_id):
+    """Eliminar un menú"""
+    menu = Menu.query.get_or_404(menu_id)
+
+    lugar = current_user.lugar_asociado
+    if not lugar or menu.lugar_id != lugar[0].id:
+        abort(403)
+
+    db.session.delete(menu)
+    db.session.commit()
+
+    flash('Menú eliminado exitosamente', 'success')
+    return redirect(url_for('gestionar_menus'))
+
+
+@app.route('/mi-comercio/menus/<int:menu_id>/items', methods=['GET', 'POST'])
+@login_required
+def gestionar_items_menu(menu_id):
+    """Gestionar items de un menú"""
+    menu = Menu.query.get_or_404(menu_id)
+
+    lugar = current_user.lugar_asociado
+    if not lugar or menu.lugar_id != lugar[0].id:
+        abort(403)
+
+    if request.method == 'POST':
+        # Agregar nuevo item
+        nombre = request.form.get('nombre')
+        descripcion = request.form.get('descripcion', '')
+        precio = request.form.get('precio')
+        categoria_item = request.form.get('categoria_item', '')
+
+        if not nombre:
+            flash('El nombre del item es obligatorio', 'error')
+            return redirect(url_for('gestionar_items_menu', menu_id=menu_id))
+
+        item = ItemMenu(
+            menu_id=menu.id,
+            nombre=nombre,
+            descripcion=descripcion,
+            precio=float(precio) if precio else None,
+            categoria_item=categoria_item,
+            orden=ItemMenu.query.filter_by(menu_id=menu.id).count()
+        )
+
+        db.session.add(item)
+        db.session.commit()
+
+        flash('Item agregado exitosamente', 'success')
+        return redirect(url_for('gestionar_items_menu', menu_id=menu_id))
+
+    items = ItemMenu.query.filter_by(menu_id=menu.id).order_by(ItemMenu.orden).all()
+    return render_template('gestionar_items.html', menu=menu, items=items, lugar=lugar[0])
+
+
+@app.route('/mi-comercio/items/<int:item_id>/eliminar', methods=['POST'])
+@login_required
+def eliminar_item(item_id):
+    """Eliminar un item del menú"""
+    item = ItemMenu.query.get_or_404(item_id)
+    menu_id = item.menu_id
+
+    menu = Menu.query.get(menu_id)
+    lugar = current_user.lugar_asociado
+    if not lugar or menu.lugar_id != lugar[0].id:
+        abort(403)
+
+    db.session.delete(item)
+    db.session.commit()
+
+    flash('Item eliminado exitosamente', 'success')
+    return redirect(url_for('gestionar_items_menu', menu_id=menu_id))
+
+
+# ------------ RUTAS PARA GESTIÓN DE REDES SOCIALES Y QR ------------
+
+@app.route('/mi-comercio/redes-sociales', methods=['GET', 'POST'])
+@login_required
+def gestionar_redes_sociales():
+    """Gestionar redes sociales y generar QR codes"""
+    if not current_user.es_comercio:
+        abort(403)
+
+    lugar = current_user.lugar_asociado
+    if not lugar or not lugar[0].aprobado:
+        abort(403)
+
+    if request.method == 'POST':
+        tipo = request.form.get('tipo')
+        url_perfil = request.form.get('url_perfil')
+
+        if not tipo or not url_perfil:
+            flash('Tipo y URL son obligatorios', 'error')
+            return redirect(url_for('gestionar_redes_sociales'))
+
+        # Generar QR code
+        qr_code_url = utils.generate_social_qr(lugar[0].id, tipo, url_perfil)
+
+        red_social = RedSocial(
+            lugar_id=lugar[0].id,
+            tipo=tipo,
+            url_perfil=url_perfil,
+            qr_code_url=qr_code_url
+        )
+
+        db.session.add(red_social)
+        db.session.commit()
+
+        flash('Red social agregada y QR generado exitosamente', 'success')
+        return redirect(url_for('gestionar_redes_sociales'))
+
+    redes = RedSocial.query.filter_by(lugar_id=lugar[0].id).all()
+    return render_template('gestionar_redes.html', lugar=lugar[0], redes=redes)
+
+
+@app.route('/mi-comercio/redes-sociales/<int:red_id>/eliminar', methods=['POST'])
+@login_required
+def eliminar_red_social(red_id):
+    """Eliminar una red social"""
+    red = RedSocial.query.get_or_404(red_id)
+
+    lugar = current_user.lugar_asociado
+    if not lugar or red.lugar_id != lugar[0].id:
+        abort(403)
+
+    db.session.delete(red)
+    db.session.commit()
+
+    flash('Red social eliminada exitosamente', 'success')
+    return redirect(url_for('gestionar_redes_sociales'))
+
+
+@app.route('/mi-comercio/qr-tarjeta')
+@login_required
+def generar_qr_tarjeta():
+    """Generar QR code con info completa del comercio"""
+    if not current_user.es_comercio:
+        abort(403)
+
+    lugar = current_user.lugar_asociado
+    if not lugar or not lugar[0].aprobado:
+        abort(403)
+
+    qr_url = utils.generate_business_card_qr(lugar[0])
+
+    return render_template('qr_tarjeta.html', lugar=lugar[0], qr_url=qr_url)
+
+
+# ------------ RUTAS PARA GESTIÓN DE FOTOS ------------
+
+@app.route('/mi-comercio/fotos', methods=['GET', 'POST'])
+@login_required
+def gestionar_fotos():
+    """Gestionar galería de fotos del comercio"""
+    if not current_user.es_comercio:
+        abort(403)
+
+    lugar = current_user.lugar_asociado
+    if not lugar or not lugar[0].aprobado:
+        abort(403)
+
+    if request.method == 'POST':
+        foto = request.files.get('foto')
+        descripcion = request.form.get('descripcion', '')
+        es_principal = request.form.get('es_principal') == 'on'
+
+        if foto and foto.filename:
+            try:
+                foto_url = utils.save_uploaded_file(foto, 'fotos', f'lugar_{lugar[0].id}')
+
+                # Si es foto principal, desmarcar las demás
+                if es_principal:
+                    FotoLugar.query.filter_by(lugar_id=lugar[0].id, es_principal=True).update({'es_principal': False})
+
+                nueva_foto = FotoLugar(
+                    lugar_id=lugar[0].id,
+                    url=foto_url,
+                    descripcion=descripcion,
+                    es_principal=es_principal,
+                    orden=FotoLugar.query.filter_by(lugar_id=lugar[0].id).count()
+                )
+
+                db.session.add(nueva_foto)
+                db.session.commit()
+
+                flash('Foto subida exitosamente', 'success')
+            except ValueError as e:
+                flash(str(e), 'error')
+
+        return redirect(url_for('gestionar_fotos'))
+
+    fotos = FotoLugar.query.filter_by(lugar_id=lugar[0].id).order_by(FotoLugar.orden).all()
+    return render_template('gestionar_fotos.html', lugar=lugar[0], fotos=fotos)
+
+
+@app.route('/mi-comercio/fotos/<int:foto_id>/eliminar', methods=['POST'])
+@login_required
+def eliminar_foto(foto_id):
+    """Eliminar una foto"""
+    foto = FotoLugar.query.get_or_404(foto_id)
+
+    lugar = current_user.lugar_asociado
+    if not lugar or foto.lugar_id != lugar[0].id:
+        abort(403)
+
+    db.session.delete(foto)
+    db.session.commit()
+
+    flash('Foto eliminada exitosamente', 'success')
+    return redirect(url_for('gestionar_fotos'))
+
+
+# ------------ ACTUALIZACIÓN DE VISTA DE COMERCIO ------------
+
+@app.route('/mi-comercio/actualizar-info', methods=['POST'])
+@login_required
+def actualizar_info_comercio():
+    """Actualizar información básica del comercio"""
+    if not current_user.es_comercio:
+        abort(403)
+
+    lugar = current_user.lugar_asociado
+    if not lugar or not lugar[0].aprobado:
+        abort(403)
+
+    lugar_obj = lugar[0]
+
+    # Actualizar campos
+    lugar_obj.descripcion = request.form.get('descripcion', '')
+    lugar_obj.telefono = request.form.get('telefono', '')
+    lugar_obj.email_contacto = request.form.get('email_contacto', '')
+    lugar_obj.sitio_web = request.form.get('sitio_web', '')
+
+    # Actualizar horarios (JSON)
+    horarios = {}
+    for dia in ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo']:
+        apertura = request.form.get(f'{dia}_apertura')
+        cierre = request.form.get(f'{dia}_cierre')
+        if apertura and cierre:
+            horarios[dia] = {'apertura': apertura, 'cierre': cierre}
+
+    lugar_obj.horarios = utils.format_horarios(horarios)
+
+    db.session.commit()
+
+    flash('Información actualizada exitosamente', 'success')
+    return redirect(url_for('mi_comercio'))
+
+
+# ------------ RUTA MEJORADA DE MI COMERCIO ------------
+
+@app.route('/mi-comercio/dashboard')
+@login_required
+def mi_comercio_dashboard():
+    """Dashboard completo del comercio con todas las opciones"""
+    if not current_user.es_comercio:
+        flash('Necesitas una cuenta de comercio', 'error')
+        return redirect(url_for('ver_mapa'))
+
+    lugar = current_user.lugar_asociado
+    if not lugar:
+        flash('Aún no tienes un comercio vinculado', 'warning')
+        return redirect(url_for('ver_mapa'))
+
+    lugar_obj = lugar[0]
+
+    # Obtener estadísticas
+    total_menus = Menu.query.filter_by(lugar_id=lugar_obj.id).count()
+    total_fotos = FotoLugar.query.filter_by(lugar_id=lugar_obj.id).count()
+    total_redes = RedSocial.query.filter_by(lugar_id=lugar_obj.id).count()
+    total_reviews = Review.query.filter_by(lugar_id=lugar_obj.id).count()
+
+    # Calcular promedio de reviews
+    avg_rating = db.session.query(func.avg(Review.puntuacion)).filter(
+        Review.lugar_id == lugar_obj.id
+    ).scalar() or 0
+
+    return render_template('mi_comercio_dashboard.html',
+                         lugar=lugar_obj,
+                         total_menus=total_menus,
+                         total_fotos=total_fotos,
+                         total_redes=total_redes,
+                         total_reviews=total_reviews,
+                         avg_rating=round(avg_rating, 1))
+
+
+# ------------ OBTENER CATEGORÍAS Y ETIQUETAS (API) ------------
+
+@app.route('/api/categorias')
+def api_categorias():
+    """Obtener todas las categorías activas"""
+    categorias = Categoria.query.filter_by(activo=True).order_by(Categoria.orden).all()
+    return {
+        'categorias': [
+            {
+                'id': c.id,
+                'nombre': c.nombre,
+                'slug': c.slug,
+                'icono': c.icono,
+                'color': c.color
+            } for c in categorias
+        ]
+    }
+
+
+@app.route('/api/etiquetas')
+def api_etiquetas():
+    """Obtener todas las etiquetas activas"""
+    etiquetas = EtiquetaEspecial.query.filter_by(activo=True).all()
+    return {
+        'etiquetas': [
+            {
+                'id': e.id,
+                'nombre': e.nombre,
+                'slug': e.slug,
+                'icono': e.icono,
+                'color': e.color
+            } for e in etiquetas
+        ]
+    }
 
 
 if __name__ == '__main__':
