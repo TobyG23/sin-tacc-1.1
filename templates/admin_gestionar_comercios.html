@@ -1,0 +1,227 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestionar Comercios - Admin{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="text-gradient"><i class="fas fa-store"></i> Gestionar Comercios</h1>
+            <p class="text-muted">Vincular usuarios comercio con sus lugares en el mapa</p>
+        </div>
+    </div>
+
+    <!-- Estadísticas rápidas -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h3 class="text-primary">{{ comercios|length }}</h3>
+                    <p class="text-muted mb-0">Total Comercios</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h3 class="text-success">{{ comercios|selectattr('lugar')|list|length }}</h3>
+                    <p class="text-muted mb-0">Con Lugar Vinculado</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h3 class="text-warning">{{ comercios|rejectattr('lugar')|list|length }}</h3>
+                    <p class="text-muted mb-0">Sin Lugar Vinculado</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de comercios -->
+    <div class="card shadow-md">
+        <div class="card-header gradient-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-list"></i> Comercios Registrados</h5>
+        </div>
+        <div class="card-body">
+            {% if comercios %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Nombre Comercio</th>
+                            <th>Plan</th>
+                            <th>Estado</th>
+                            <th>Lugar Vinculado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in comercios %}
+                        <tr>
+                            <td>
+                                <strong>{{ item.usuario.email }}</strong>
+                                <br>
+                                <small class="text-muted">ID: {{ item.usuario.id }}</small>
+                            </td>
+                            <td>
+                                {% if item.usuario.nombre_comercio %}
+                                    {{ item.usuario.nombre_comercio }}
+                                {% else %}
+                                    <span class="text-muted">No especificado</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.usuario.plan == 'premium' %}
+                                    <span class="badge badge-warning">Premium</span>
+                                {% elif item.usuario.plan == 'destacado' %}
+                                    <span class="badge badge-info">Destacado</span>
+                                {% else %}
+                                    <span class="badge badge-secondary">Gratuito</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.lugar %}
+                                    <span class="badge badge-success">
+                                        <i class="fas fa-check-circle"></i> Vinculado
+                                    </span>
+                                {% else %}
+                                    <span class="badge badge-danger">
+                                        <i class="fas fa-exclamation-circle"></i> Sin vincular
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.lugar %}
+                                    <strong>{{ item.lugar.nombre }}</strong>
+                                    <br>
+                                    <small class="text-muted">{{ item.lugar.ciudad }}, {{ item.lugar.provincia }}</small>
+                                    <br>
+                                    <a href="{{ url_for('ver_lugar', id=item.lugar.id) }}" target="_blank" class="btn btn-sm btn-outline-primary mt-1">
+                                        <i class="fas fa-external-link-alt"></i> Ver
+                                    </a>
+                                {% else %}
+                                    <span class="text-muted">Sin lugar asignado</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.lugar %}
+                                    <!-- Ya tiene lugar vinculado -->
+                                    <form method="POST" action="{{ url_for('desvincular_comercio', id=item.usuario.id) }}" style="display: inline;"
+                                          onsubmit="return confirm('¿Desvincular este comercio de su lugar?');">
+                                        <button type="submit" class="btn btn-sm btn-warning">
+                                            <i class="fas fa-unlink"></i> Desvincular
+                                        </button>
+                                    </form>
+                                {% else %}
+                                    <!-- No tiene lugar vinculado - mostrar selector -->
+                                    <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal"
+                                            data-bs-target="#modalVincular{{ item.usuario.id }}">
+                                        <i class="fas fa-link"></i> Vincular
+                                    </button>
+                                {% endif %}
+                            </td>
+                        </tr>
+
+                        <!-- Modal para vincular -->
+                        {% if not item.lugar %}
+                        <div class="modal fade" id="modalVincular{{ item.usuario.id }}" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header gradient-primary text-white">
+                                        <h5 class="modal-title">Vincular Comercio</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <form method="POST" action="{{ url_for('vincular_comercio_rapido') }}">
+                                        <div class="modal-body">
+                                            <input type="hidden" name="usuario_id" value="{{ item.usuario.id }}">
+
+                                            <p><strong>Usuario:</strong> {{ item.usuario.email }}</p>
+                                            {% if item.usuario.nombre_comercio %}
+                                            <p><strong>Nombre del comercio:</strong> {{ item.usuario.nombre_comercio }}</p>
+                                            {% endif %}
+
+                                            <hr>
+
+                                            <div class="mb-3">
+                                                <label for="lugar_id{{ item.usuario.id }}" class="form-label">
+                                                    <i class="fas fa-map-marker-alt"></i> Selecciona un lugar:
+                                                </label>
+                                                <select name="lugar_id" id="lugar_id{{ item.usuario.id }}" class="form-control" required>
+                                                    <option value="">-- Selecciona un lugar --</option>
+                                                    {% for lugar in lugares_disponibles %}
+                                                    <option value="{{ lugar.id }}">
+                                                        {{ lugar.nombre }} - {{ lugar.ciudad }}, {{ lugar.provincia }}
+                                                    </option>
+                                                    {% endfor %}
+                                                </select>
+                                                <small class="text-muted">
+                                                    Solo se muestran lugares aprobados y disponibles
+                                                </small>
+                                            </div>
+
+                                            {% if not lugares_disponibles %}
+                                            <div class="alert alert-warning">
+                                                <i class="fas fa-exclamation-triangle"></i>
+                                                No hay lugares disponibles para vincular.
+                                                El comercio debe <a href="{{ url_for('sugerir') }}" target="_blank">crear un lugar</a> primero.
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                            {% if lugares_disponibles %}
+                                            <button type="submit" class="btn btn-success">
+                                                <i class="fas fa-link"></i> Vincular
+                                            </button>
+                                            {% endif %}
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-store fa-5x text-muted mb-3"></i>
+                <h4>No hay comercios registrados</h4>
+                <p class="text-muted">Los usuarios que se registren como comercio aparecerán aquí</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Instrucciones -->
+    <div class="card mt-4 border-info">
+        <div class="card-body">
+            <h5 class="text-info"><i class="fas fa-info-circle"></i> ¿Cómo funciona?</h5>
+            <ol class="mb-0">
+                <li>Los usuarios se registran como <strong>comercio</strong></li>
+                <li>El comercio debe <strong>crear un lugar</strong> desde "Sugerir lugar"</li>
+                <li>Tú (admin) <strong>apruebas el lugar</strong> desde <a href="{{ url_for('revisar_lugares') }}">Revisar lugares</a></li>
+                <li>Desde aquí <strong>vinculas</strong> al usuario con su lugar</li>
+                <li>Ya puede acceder al <strong>dashboard de comercio</strong> completo</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- Botones de navegación -->
+    <div class="mt-4">
+        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Volver al Dashboard
+        </a>
+        <a href="{{ url_for('revisar_lugares') }}" class="btn btn-outline-primary">
+            <i class="fas fa-map-marked-alt"></i> Revisar Lugares
+        </a>
+        <a href="{{ url_for('admin_usuarios') }}" class="btn btn-outline-info">
+            <i class="fas fa-users"></i> Gestionar Usuarios
+        </a>
+    </div>
+</div>
+{% endblock %}

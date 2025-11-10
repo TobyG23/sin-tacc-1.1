@@ -930,6 +930,68 @@ def toggle_publicidad(id):
     flash(f"Publicidad {estado} para {usuario.email}.", "info")
     return redirect(url_for('admin_usuarios'))
 
+@app.route('/admin/gestionar-comercios')
+@login_required
+def gestionar_comercios():
+    """Panel para gestionar usuarios comercio y sus vinculaciones"""
+    if not current_user.is_admin:
+        abort(403)
+
+    # Obtener todos los usuarios comercio
+    comercios = Usuario.query.filter_by(es_comercio=True).all()
+
+    # Obtener lugares sin vincular (sin usuario_id o con usuario que no es comercio)
+    lugares_disponibles = LugarSugerido.query.filter(
+        (LugarSugerido.usuario_id == None) |
+        (~LugarSugerido.usuario_id.in_([c.id for c in comercios]))
+    ).filter_by(aprobado=True).all()
+
+    # Para cada comercio, obtener su lugar vinculado si existe
+    comercios_data = []
+    for comercio in comercios:
+        lugar = LugarSugerido.query.filter_by(usuario_id=comercio.id).first()
+        comercios_data.append({
+            'usuario': comercio,
+            'lugar': lugar
+        })
+
+    return render_template('admin_gestionar_comercios.html',
+                          comercios=comercios_data,
+                          lugares_disponibles=lugares_disponibles)
+
+@app.route('/admin/vincular-comercio-rapido', methods=['POST'])
+@login_required
+def vincular_comercio_rapido():
+    """Vincular rápidamente un comercio con un lugar existente"""
+    if not current_user.is_admin:
+        abort(403)
+
+    usuario_id = request.form.get('usuario_id', type=int)
+    lugar_id = request.form.get('lugar_id', type=int)
+
+    if not usuario_id or not lugar_id:
+        flash('Datos incompletos', 'error')
+        return redirect(url_for('gestionar_comercios'))
+
+    usuario = Usuario.query.get_or_404(usuario_id)
+    lugar = LugarSugerido.query.get_or_404(lugar_id)
+
+    # Verificar que el usuario es comercio
+    if not usuario.es_comercio:
+        flash('El usuario no es un comercio', 'error')
+        return redirect(url_for('gestionar_comercios'))
+
+    # Desvincular el lugar de cualquier otro usuario
+    if lugar.usuario_id:
+        flash(f'Lugar desvinculado de usuario anterior', 'info')
+
+    # Vincular
+    lugar.usuario_id = usuario.id
+    db.session.commit()
+
+    flash(f'✓ Comercio {usuario.email} vinculado con {lugar.nombre}', 'success')
+    return redirect(url_for('gestionar_comercios'))
+
 @app.route('/admin/usuarios/desvincular_comercio/<int:id>', methods=['POST'])
 @login_required
 def desvincular_comercio(id):
